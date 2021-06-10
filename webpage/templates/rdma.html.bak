@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head> 
+<meta content="text/html;charset=UTF-8">
+<title>网页播放本地视频</title> 
+</head>
+<body>
+    <video height="400" controls Autoplay=autoplay>
+		<source src="{% static 'video/rdma.mp4' %}" type="video/mp4">
+	</video>
+</body>
+</html>

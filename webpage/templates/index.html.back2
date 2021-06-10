@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load staticfiles %}
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="{% static 'images/hust.jfif' %}" type="image/ico" />
+
+	<title>图计算演示系统</title>
+
+    <!-- Bootstrap -->
+	<link href="{% static 'vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+	<!-- NProgress -->
+	<link href="{% static 'vendors/nprogress/nprogress.css' %}" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="{% static 'vendors/iCheck/skins/flat/green.css' %}" rel="stylesheet">
+	<!-- bootstrap-progressbar -->
+    <link href="{% static 'vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+	<!-- JQVMap -->
+    <link href="{% static 'vendors/jqvmap/dist/jqvmap.min.css' %}" rel="stylesheet"/>
+	<!-- bootstrap-daterangepicker -->
+	<link href="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.css' %}" rel="stylesheet">
+    <!-- Custom Theme Style -->
+	<link href="{% static 'build/css/custom.css' %}" rel="stylesheet">
+	
+	<link href="{% static 'loading_css/loading2.css' %}" rel="stylesheet">
+
+	<script src="{% static 'barchart/echarts.js' %} "></script>
+	<script src="{% static 'jquery/jquery-3.1.1.min.js' %} "></script>
+	
+
+	<script>
+	
+	var acc_count=0;
+
+	$(document).ready(function(){
+		
+		$("#span_refresh").bind("click", function () {
+			//console.log('reset Accelerator');
+			document.getElementById("loading_terminal").style.display="";
+			$("#acc_run_ans").html("Accelerator is resetting...");
+			$.ajax({
+				url:"/reset_run/",
+				type:"GET",
+				data:{"info":'reset Accelerator'},
+				success:function (data) {
+					$("#acc_run_ans").html("");		
+					for(var i = 0; i<= data.length-1; i++){
+						$("#acc_run_ans").append(data[i] + '</br>')
+					}
+					$("#acc_run_ans").append('Accelerator reset complete' + '</br>')
+					document.getElementById("loading_terminal").style.display="none";
+				}
+			});
+		});
+
+		$("#code_show").on("click", function () {
+				$.get("{% static 'code_show/acc.v' %}?ti=" + new Date().getTime(), function(record) {
+					//$("#acc_code").val(record);
+					record = record.replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp');
+					record = record.replace(/\n/g, '</br>');
+					
+					$("#acc_code").html("");
+					$("#acc_code").append(record);
+					var str=document.getElementById("acc_code").innerHTML;
+					str=str.replace(/InitializeGraph/,"<font color=\"red\">InitializeGraph</font>");
+					str=str.replace(/module/g,"<b>module</b>");
+					str=str.replace(/begin/g,"<b>begin</b>");
+					str=str.replace(/end/g,"<b>end</b>");
+					str=str.replace(/for/g,"<b>for</b>");
+					str=str.replace(/if/g,"<b>if</b>");
+					str=str.replace(/else/g,"<b>else</b>");
+					str=str.replace(/reg/g,"<b>reg</b>");
+					str=str.replace(/const/g,"<b>const</b>");
+					document.getElementById("acc_code").innerHTML=str;
+				});
+		});
+
+		$("#accelerator_reset").on("click", function () {
+			var chart = echarts.init(document.getElementById("bfs_bardata"));
+			chart.dispose();
+			chart = echarts.init(document.getElementById("pr_bardata"));
+			chart.dispose();
+			chart = echarts.init(document.getElementById("bfs_power_bardata"));
+			chart.dispose();
+			chart = echarts.init(document.getElementById("pr_time_bardata"));
+			chart.dispose();
+			$("#acc_run_ans").html("");
+			//$("#acc_code").val('');
+			$("#acc_code").html("");
+
+			myColumns['x_data'] = [];
+			myColumns['foregraph_data'] = [];
+			myColumns['graphops_data'] = [];
+			myColumns['midterm_data'] = [];
+			myColumns['acc_data'] = [];
+			myColumns['final_data'] = [];
+
+			mypowerColumns['x_data'] = [];
+			mypowerColumns['foregraph_data'] = [];
+			mypowerColumns['midterm_data'] = [];
+			mypowerColumns['acc_data'] = [];
+			mypowerColumns['final_data'] = [];
+
+			prColumns['x_data'] = [];
+			prColumns['foregraph_data'] = [];
+			prColumns['graphops_data'] = [];
+			prColumns['midterm_data'] = [];
+			prColumns['acc_data'] = [];
+			prColumns['final_data'] = [];
+
+			prtimeColumns['x_data'] = [];
+			prtimeColumns['foregraph_data'] = [];
+			prtimeColumns['midterm_data'] = [];
+			prtimeColumns['acc_data'] = [];
+			prtimeColumns['final_data'] = [];
+		});
+		
+		$("#accelerator_run").on("click", function () {
+
+			/*if($("#algorithm").val() == "bfs"){
+				for(var i=0;i<myColumns.x_data.length;i++){
+					if($("#dataset").val()==myColumns.x_data[i]){
+						console.log('same algorithm and dataset');
+						return;
+					}
+				}
+			}
+			else if($("#algorithm").val() == "pagerank"){
+				for(var i=0;i<prColumns.x_data.length;i++){
+					if($("#dataset").val()==prColumns.x_data[i]){
+						console.log('same algorithm and dataset');
+						return;
+					}
+				}
+			}*/
+			
+			if($("#algorithm").val() == 'none' || $("#dataset").val()=='none'){
+				return;
+			}
+			
+
+			$("#acc_run_ans").html("");
+
+			//$("#loading_div").show();
+			if($("#algorithm").val() == "bfs"){
+				document.getElementById("loading_terminal").style.display="";
+				document.getElementById("loading_bfs_bardata").style.display="";
+				document.getElementById("loading_bfs_power_bardata").style.display="";
+			}
+			else if($("#algorithm").val() == "pagerank"){
+				document.getElementById("loading_terminal").style.display="";
+				document.getElementById("loading_pr_bardata").style.display="";
+				document.getElementById("loading_pr_time_bardata").style.display="";
+			}
+			
+			acc_count+=1;
+			acc_count=acc_count%2;
+			$.ajax({
+				url:"/acc_run/",
+				type:"GET",
+				data:{"dataset":$("#dataset").val(),"algorithm":$("#algorithm").val(),"acc_count":acc_count},
+				success:function (data) {
+					$("#acc_run_ans").html("");
+
+					for(var i = 0; i<= data.length-1; i++){
+						if(JSON.stringify(data[i]).substr(2,10)=='XILINX_XRT'
+							||JSON.stringify(data[i]).substr(2,4)=='PATH'
+							||JSON.stringify(data[i]).substr(2,15)=='LD_LIBRARY_PATH'
+							||JSON.stringify(data[i]).substr(2,10)=='PYTHONPATH'
+							||JSON.stringify(data[i]).substr(2,6)=='/home/'){
+							continue;
+						}
+						$("#acc_run_ans").append(data[i] + '</br>');
+						console.log(JSON.stringify(data[i]));
+					}
+
+					if($("#algorithm").val() == "bfs"){
+						myColumns.x_data.push($("#dataset").val());
+						myColumns.foregraph_data.push(0.33);
+						myColumns.graphops_data.push(0.066);
+						myColumns.midterm_data.push(0.5);
+						myColumns.acc_data.push(JSON.stringify(data[data.length-2]).substr(44,9));
+						myColumns.final_data.push(1.0);
+						draw_bfs();
+
+						mypowerColumns.x_data.push($("#dataset").val());
+						mypowerColumns.foregraph_data.push(0.002);
+						mypowerColumns.midterm_data.push(0.010);
+						mypowerColumns.acc_data.push(parseFloat(parseFloat(JSON.stringify(data[data.length-2]).substr(44,9))/28.76).toFixed(3));
+						mypowerColumns.final_data.push(0.030);
+						draw_bfs_power();
+
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bfs_bardata").style.display="none";
+						document.getElementById("loading_bfs_power_bardata").style.display="none";
+					}
+					else if($("#algorithm").val() == "pagerank"){
+						prColumns.x_data.push($("#dataset").val());
+						prColumns.foregraph_data.push(1.0);
+						prColumns.graphops_data.push(0.2);
+						prColumns.midterm_data.push(1.22);
+						prColumns.acc_data.push(JSON.stringify(data[data.length-2]).substr(44,9));
+						prColumns.final_data.push(1.92);
+						draw_pr();
+
+						prtimeColumns.x_data.push($("#dataset").val());
+						prtimeColumns.foregraph_data.push(70);
+						prtimeColumns.midterm_data.push(55);
+						var str=JSON.stringify(data[data.length-3]);
+						console.log(str);
+						var str2=str.substr(38,str.length-5-31);
+						console.log(str2);
+						str3=parseFloat(parseFloat(str2)/1000000).toFixed(2);
+						prtimeColumns.acc_data.push(str3);
+						prtimeColumns.final_data.push(35);
+						draw_pr_time();
+
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_pr_bardata").style.display="none";
+						document.getElementById("loading_pr_time_bardata").style.display="none";
+					}
+					
+					//$("#loading_div").hide();
+
+				}
+			});
+		});
+	});
+	</script>
+
+
+	<script>
+
+		myColumns = {};
+		myColumns['x_data'] = [];
+		myColumns['foregraph_data'] = [];
+		myColumns['graphops_data'] = [];
+		myColumns['midterm_data'] = [];
+		myColumns['acc_data'] = [];
+		myColumns['final_data'] = [];
+
+		function draw_bfs(){
+
+			var myChart = echarts.init(document.getElementById('bfs_bardata'));
+			
+			var colors = ['#000000', '#D9B300', '#FF0000', '#4A4AFF', '#ADADAD'];
+
+			option = {
+				color: colors,
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				}
+			},
+			grid: {
+				right: '10%'
+			},
+			toolbox: {
+				feature: {
+					dataView: {show: true, readOnly: true},
+					restore: {show: false},
+					saveAsImage: {show: true}
+				}
+			},
+			legend: {
+				data:['Foregraph','GraphOps','中期指标','加速器', '最终指标']
+			},
+			xAxis: [
+				{
+					type: 'category',
+					axisTick: {
+						aignWithLabel: true
+					},
+					data: myColumns.x_data
+				}
+			],
+			yAxis: [
+				{
+					type: 'value',
+					name: '性能(GTEPS)',
+					min: 0.0,
+					max: 2.0,
+					position: 'left',
+					axisLine: {
+						lineStyle: {
+							color: colors[0]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				},
+				{
+					type: 'value',
+					name: '',
+					min: 0.0,
+					max: 2.0,
+					position: 'right',
+					axisLine: {
+						lineStyle: {
+							color: colors[2]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				}
+			],
+			series: [
+				{
+					name:'Foregraph',
+					type:'bar',
+					data: myColumns.foregraph_data
+				},
+				{
+					name:'GraphOps',
+					type:'bar',
+					data: myColumns.graphops_data
+
+				},
+				{
+					name:'中期指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: myColumns.midterm_data
+				},
+				{
+					name:'加速器',
+					type:'bar',
+					yAxisIndex: 1,
+					data: myColumns.acc_data
+				},
+				{
+					name:'最终指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: myColumns.final_data
+				}
+				]
+			};
+				myChart.setOption(option);
+
+	}
+
+	</script>
+
+	<script>
+
+	mypowerColumns = {};
+	mypowerColumns['x_data'] = [];
+	mypowerColumns['foregraph_data'] = [];
+	mypowerColumns['midterm_data'] = [];
+	mypowerColumns['acc_data'] = [];
+	mypowerColumns['final_data'] = [];
+	
+	function draw_bfs_power(){//GraphChi:0.002GTEPS/W
+		
+		var myChart = echarts.init(document.getElementById('bfs_power_bardata'));
+		
+		var colors = ['#000000', '#FF0000', '#4A4AFF', '#ADADAD'];
+		
+		option = {
+			color: colors,
+			tooltip: {
+			trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				}
+			},
+			grid: {
+				right: '10%'
+			},
+			toolbox: {
+				feature: {
+					dataView: {show: true, readOnly: true},
+					restore: {show: false},
+					saveAsImage: {show: true}
+				}
+			},
+			legend: {
+				data:['GraphChi','中期指标','加速器', '最终指标']
+			},
+			xAxis: [
+				{
+					type: 'category',
+					axisTick: {
+						aignWithLabel: true
+					},
+					data: mypowerColumns.x_data
+				}
+			],
+			yAxis: [
+				{
+					type: 'value',
+					name: '性能功耗比(GTEPS/W)',
+					min: 0.0,
+					max: 0.1,
+					position: 'left',
+					axisLine: {
+						lineStyle: {
+							color: colors[0]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				},
+				{
+					type: 'value',
+					name: '',
+					min: 0.0,
+					max: 0.1,
+					position: 'right',
+					axisLine: {
+						lineStyle: {
+							color: colors[1]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				}
+			],
+			series: [
+				{
+					name:'GraphChi',
+					type:'bar',
+				    data: mypowerColumns.foregraph_data
+				},
+				{
+					name:'中期指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: mypowerColumns.midterm_data
+				},
+				{
+					name:'加速器',
+					type:'bar',
+					yAxisIndex: 1,
+					data: mypowerColumns.acc_data
+				},
+				{
+					name:'最终指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: mypowerColumns.final_data
+				}
+			]
+		};
+			myChart.setOption(option);
+		
+	}
+	
+	</script>
+
+	<script>
+
+		prColumns = {};
+		prColumns['x_data'] = [];
+		prColumns['foregraph_data'] = [];
+		prColumns['graphops_data'] = [];
+		prColumns['midterm_data'] = [];
+		prColumns['acc_data'] = [];
+		prColumns['final_data'] = [];
+
+		function draw_pr(){
+
+			var myChart = echarts.init(document.getElementById('pr_bardata'));
+			
+			var colors = ['#000000', '#D9B300', '#FF0000', '#4A4AFF', '#ADADAD'];
+
+			option = {
+				color: colors,
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				}
+			},
+			grid: {
+				right: '10%'
+			},
+			toolbox: {
+				feature: {
+					dataView: {show: true, readOnly: true},
+					restore: {show: false},
+					saveAsImage: {show: true}
+				}
+			},
+			legend: {
+				data:['Foregraph','GraphOps','中期指标','加速器', '最终指标']
+			},
+			xAxis: [
+				{
+					type: 'category',
+					axisTick: {
+						aignWithLabel: true
+					},
+					data: prColumns.x_data
+				}
+			],
+			yAxis: [
+				{
+					type: 'value',
+					name: '性能(GTEPS)',
+					min: 0.0,
+					max: 4.0,
+					position: 'left',
+					axisLine: {
+						lineStyle: {
+							color: colors[0]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				},
+				{
+					type: 'value',
+					name: '',
+					min: 0.0,
+					max: 4.0,
+					position: 'right',
+					axisLine: {
+						lineStyle: {
+							color: colors[2]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				}
+			],
+			series: [
+				{
+					name:'Foregraph',
+					type:'bar',
+					data: prColumns.foregraph_data
+				},
+				{
+					name:'GraphOps',
+					type:'bar',
+					data: prColumns.graphops_data
+				},
+				{
+					name:'中期指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: prColumns.midterm_data
+				},
+				{
+					name:'加速器',
+					type:'bar',
+					yAxisIndex: 1,
+					data: prColumns.acc_data
+				},
+				{
+					name:'最终指标',
+					type:'bar',
+					yAxisIndex: 1,
+					data: prColumns.final_data
+				}
+				]
+			};
+				myChart.setOption(option);
+
+	}
+
+	</script>
+
+	<script>
+	
+		prtimeColumns = {};
+		prtimeColumns['x_data'] = [];
+		prtimeColumns['foregraph_data'] = [];
+		prtimeColumns['midterm_data'] = [];
+		prtimeColumns['acc_data'] = [];
+		prtimeColumns['final_data'] = [];
+		
+		function draw_pr_time(){//Foregraph:70ms
+		
+			var myChart = echarts.init(document.getElementById('pr_time_bardata'));
+			
+			var colors = ['#000000', '#FF0000', '#4A4AFF', '#ADADAD'];
+			
+			option = {
+				color: colors,
+				tooltip: {
+					trigger: 'axis',
+					axisPointer: {
+						type: 'cross'
+					}
+				},
+				grid: {
+					right: '10%'
+				},
+				toolbox: {
+					feature: {
+						dataView: {show: true, readOnly: true},
+						restore: {show: false},
+						saveAsImage: {show: true}
+					}
+				},
+				legend: {
+					data:['Foregraph','中期指标','加速器', '最终指标']
+				},
+				xAxis: [
+					{
+						type: 'category',
+						axisTick: {
+							aignWithLabel: true
+						},
+						data: prtimeColumns.x_data
+					}
+				],
+				yAxis: [
+					{
+						type: 'value',
+						name: '时间(ms)',
+						min: 0.0,
+						max: 150.0,
+						position: 'left',
+						axisLine: {
+							lineStyle: {
+								color: colors[0]
+							}
+						},
+						axisLabel: {
+							formatter: '{value} '
+						}
+					},
+					{
+						type: 'value',
+						name: '',
+						min: 0.0,
+						max: 150.0,
+						position: 'right',
+						axisLine: {
+							lineStyle: {
+							color: colors[1]
+							}
+						},
+						axisLabel: {
+							formatter: '{value} '
+						}
+					}
+				],
+				series: [
+					{
+						name:'Foregraph',
+						type:'bar',
+						data: prtimeColumns.foregraph_data
+					},
+					{
+						name:'中期指标',
+						type:'bar',
+						yAxisIndex: 1,
+						data: prtimeColumns.midterm_data
+					},
+					{
+						name:'加速器',
+						type:'bar',
+						yAxisIndex: 1,
+						data: prtimeColumns.acc_data
+					},
+					{
+						name:'最终指标',
+						type:'bar',
+						yAxisIndex: 1,
+						data: prtimeColumns.final_data
+					}
+				]
+			};
+				myChart.setOption(option);
+		
+		}
+	
+	</script>
+
+
+  </head>
+
+  <style type="text/css">
+  #terminal {
+  /* 父容器设置宽度, 并超出部分不显示 */
+  /* width: 650px; */
+  height: 492px; 
+  overflow: hidden;
+  }
+  #terminal > div {
+  /* 子容器比父容器的宽度多 17 px, 经测正好是滚动条的默认宽度 */
+  /* width: 667px; */
+  height: 495px; 
+  line-height: 20px;
+  text-align: left;
+  overflow-y: scroll;
+  word-break:break-all;
+  font-size:16px;
+  }
+
+  #bfs_bardata{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 100%;
+	height: 290px;
+	border: rgb(223, 13, 170);
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+  }
+  #bfs_power_bardata{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 100%;
+	height: 290px;
+	border: rgb(223, 13, 170);
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+  }
+
+  #pr_bardata{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 100%;
+	height: 290px;
+	border: rgb(223, 13, 170);
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+  }
+  #pr_time_bardata{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 100%;
+	height: 290px;
+	border: rgb(223, 13, 170);
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+  }
+
+    #loading_div{
+		margin-left: 0px;
+		border: 2px solid #457;
+		float: left;
+		clear: both;
+		width: 15%;
+		height: 30px;
+		border: rgb(223, 13, 170);
+		margin-top: 160px;
+		margin-left: 0px;
+		margin-bottom: -40px;
+	}
+
+  </style>
+
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view" style="height:2400px">
+
+            <div class="clearfix"></div>
+
+            <!-- menu profile quick info -->
+            <div class="profile clearfix">
+              <div class="profile_pic" style="margin-top:10px">
+				<img src="{% static 'images/logo.jpg' %}" alt="..." class="img-circle profile_img" style="padding: 0px 0px 0px 0px">
+			  </div>
+              <div class="profile_info" style="margin-left:-10px;width:150px;">
+                <span>国家重点研发计划项目</span>
+                <h2>面向图计算的通用计算机技术与系统 </br> (2018YFB1003500)</h2>
+              </div>
+            </div>
+            <!-- /menu profile quick info -->
+
+            <br />
+
+            <!-- sidebar menu -->
+            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+              <div class="menu_section">
+                <h2 style="margin-left:10px"> <font size="5" color='#BBFFFF'> 演示内容 </font></h2>
+                <ul class="nav side-menu">
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 图计算加速器 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'index' %}"> <font size="3"> 图计算加速器 </font></a></li>
+                    </ul>
+                  </li>
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 单机图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+						<li><a href="{% url 'hls' %}"> <font size="3"> 高层次综合系统 </font> </a></li>
+						<li><a href="{% url 'compare' %}"> <font size="3"> 图数据库系统 </font></a></li>
+						<li><a href="{% url 'graphstream' %}"> <font size="3"> 图流分析 </font></a></li>
+					</ul>
+				  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 分布式图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<!--<li><a href="{% url 'rdma' %}"> <font size="3"> RDMA性能测试 </font></a></li>-->
+						<li><a href="{% url 'distribute' %}"> <font size="3"> 单机多卡性能测试 </font></a></li>
+					</ul>
+				  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 典型应用验证 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<li><a href="{% url 'power' %}"> <font size="3"> 电力图分析</a> </font> </li>
+						<li><a href="{% url 'financial' %}"> <font size="3"> 金融·医保反欺诈 </font> </a></li>
+					</ul>
+				  </li>
+                </ul>
+              </div>
+			</div>
+            <!-- /sidebar menu -->
+
+            <!-- /menu footer buttons -->
+            <div class="sidebar-footer hidden-small">
+              <a data-toggle="tooltip" data-placement="top" title="Settings">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+              </a>
+              <!--<a data-toggle="tooltip" data-placement="top" title="Lock">
+                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+              </a>-->
+			  <a data-toggle="tooltip" data-placement="top" title="Reset Accelerator">
+				<span id="span_refresh" class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+			  </a>
+              <a data-toggle="tooltip" data-placement="top" title="Logout" >
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+            <!-- /menu footer buttons -->
+          </div>
+        </div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+          </div>
+        </div>
+        <!-- /top navigation -->
+
+        <!-- page content -->
+          <div class="right_col" role="main">
+		  <!-- top tiles -->
+		  <div class="row">
+			 <div class="tile_count">
+			 <div class="col">
+				<span class="count_top"><i class="fa fa-user"></i> <font size='5'>考核指标</br></font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-list-style: none} style="font-size:18px">① 单节点计算性能中期达到<font color='#FF0000'>0.5GTEPS</font>，最终性能达到<font color='#FF0000'>1GTEPS</font>。</br></li>
+					<li{st-list-style: none} style="font-size:18px">② 单节点性能功耗比中期达到<font color='#FF0000'>0.01GTEPS/W</font>，最终达到<font color='#FF0000'>0.03GTEPS/W</font>。</br></li>
+					<li{st-list-style: none} style="font-size:18px">③ 静态图计算达到<font color='#FF0000'>2-3倍</font>加速比（测试每轮迭代时间，中期时不大于<font color='#FF0000'>55ms</font>，最终不大于<font color='#FF0000'>35ms</font>）。</br></li>
+				</ul>
+				<span class="count_top"><i class="fa fa-user"></i> <font size='5'>评测方法</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:18px">① <font color='#FF0000'>性能评测方法</font>：使用点规模不大于<font color='#FF0000'>2^22</font>的图数据集，运行<font color='#FF0000'>BFS</font>标准代码的性能达到<font color='#FF0000'>1GTEPS</font>。</br></li>
+					<li{st-style: none} style="font-size:18px">② <font color='#FF0000'>性能功耗比评测方法</font>：和经典CPU系统GraphChi以及经GPU系统Medusa相比，单节点运行<font color='#FF0000'>BFS</font>标准代码的性能功耗比达到<font color='#FF0000'>10倍(0.03GTEPS/W)</font>。BFS的GTEPS计算方法参考2010年超级计算机大会上提出的Graph500中的相关定义(https://graph500.org/)。</br></li>
+					<li{st-style: none} style="font-size:18px">③ <font color='#FF0000'>静态加速比评测方法</font>：和当前基于FPGA的图计算加速器（如 ForeGraph）相比，使用点规模不大于<font color='#FF0000'>2^22</font>，边规模不大于<font color='#FF0000'>2^26</font>的静态图数据集，运行<font color='#FF0000'>PageRank</font>算法每轮迭代所需时间降低到<font color='#FF0000'>1/3-1/2</font>，达到<font color='#FF0000'>2-3倍</font>加速比。</br></li>
+				</ul>
+				<span class="count_top"><i class="fa fa-user"></i> <font size='5'>数据集来源</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:18px">国际知名的图计算性能排行榜Graph500(包含4个涵盖不同测试规模的生成图)，以及3个自然图:Wiki、Gplus、Orkut。</br></li>
+				</ul>
+			 </div>
+			 </div>
+		  </div>
+		  <!-- /top tiles -->
+
+		  <!-- project introduction -->
+		  <!--<div class="row">
+			<div class="col-md-12 col-sm-12 ">
+			  <div class="x_panel">
+			   <div class="x_title">
+			    <h2>加速器简介</h2>
+				 <ul class="nav navbar-right panel_toolbox">
+				  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+				  </li>
+				  <li><a class="close-link"><i class="fa fa-close"></i></a>
+				  </li>
+				</ul>
+				<div class="clearfix"></div>
+			   </div>
+			   <div class="x_content">
+			    <div class="dashboard-widget-content">
+
+				 <ul class="list-unstyled timeline widget">
+				  <li>
+				   <div class="block">
+				    <div class="block_content">
+					 <h2 class="title">
+					  <a>背景</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;"> 图结构因为其灵活的表达力被广泛应用在各类重要的应用场景中，例如网页排序，社交网络分析等。近来年，随着图规模的逐渐增大，图计算自身独有的特性（包括随机访存和计算/通讯比低等）使得其在通用处理器上的执行效率远低于传统应用。尽管许多研究工作从软件的层面提出了一系列的优化策略，现有的图计算系统依旧难以高效地运行在通用处理器上。因此本课题的目标，是针对图应用本身的计算和访存特性，设计出一套完整的硬件架构以高效地支持图计算。
+					 </p>
+					 <h2 class="title">
+					  <a>方案介绍</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;"> 在图计算中会导致流水线阻塞的主要有计算和访存两方面的因素。在计算方面，同一个目标点会同时被多个源点更新，为了保证计算的正确性，通常需要阻塞式地处理这些冲突操作。针对这一数据冲突的问题，我们提出了并行归并技术，通过流水地归并所有冲突操作的方式达到无阻塞处理的目标。而在访存方面，一方面源点数据访问会带来大量的乱序访存；另一方面连续目标点入边可能跨多个cacheline，同样带来一定的乱序访存。针对前者，我们采用了将所有点数据缓存在片上的方式以避免流水阻塞，并通过乱序访存机制提高多端口RAM的吞吐量；针对后者，我们提出了流水线分离技术，通过点边流水线分离的方式，在以点为中心的模型中实现了边的流式处理。
+
+					 </p>
+					</div>
+				   </div>
+				  </li>
+				 </ul>
+				</div>
+			   </div>
+			 </div>-->
+			
+          <div class="row">
+            
+				<div class="col-md-6 col-sm-6 ">
+					<div class="x_panel">
+						<div class="x_title">
+							<h2 style="font-size:22px">代码显示</h2>
+							<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+
+						<div class="x_content">
+							<div class="col-md-12 col-sm-12 " >
+								<div id="acc_code" style="height: 600px;overflow-y: scroll;font-size:16px;"></div>
+								<!--<textarea class="resizable_textarea form-control" placeholder="BFS/PageRank代码..." style="height: 450px;margin-left:-10px;width:105%" id="acc_code"></textarea>-->
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 col-sm-6 ">
+					<div class="x_panel">
+						<div class="x_title">
+							<h2 style="font-size:22px">并行累加器</h2>
+							<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+
+						<div class="x_content">
+							<div class="col-md-12 col-sm-12 " >
+								<div id="acc_code" style="height: 600px;overflow-y: scroll;">
+									<img src="/static/images/parallel_acc_example.jpg" width="100%"">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+
+
+
+
+
+				</div> <!--row end-->
+
+                <div class="clearfix"></div>
+
+
+				<!-- run_info_terminal -->
+				<div class="row">
+				
+				
+				<div class="col-md-4 col-sm-4">
+				<div class="x_panel">
+                  <div class="x_title">
+                    <h2 style="font-size:22px">数据集说明</h2>
+					<ul class="nav navbar-right panel_toolbox">
+						<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+						</li>
+						<li><a class="close-link"><i class="fa fa-close"></i></a>
+						</li>
+					</ul>
+                    <div class="clearfix"></div>
+                  </div>
+
+                  <div class="x_content">
+					<table id="datatable-checkbox" class="table table-striped table-bordered bulk_action" style="width:100%">
+						<thead style="font-size:18px">
+							<tr>
+								<!--<th>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</th>-->
+								<th>数据集</th>
+								<th>点数</th>
+								<th>边数</th>
+							</tr>
+						</thead>
+
+						<tbody style="font-size:16px">
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Wiki</td>
+								<td>7115</td>
+								<td>108423</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Gplus</td>
+								<td>107614</td>
+								<td>13673471</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Orkut</td>
+								<td>3072625</td>
+								<td>234370305</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Rmat_19</td>
+								<td>524280</td>
+								<td>17301240</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Rmat_20</td>
+								<td>1048101</td>
+								<td>34587333</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Rmat_21</td>
+								<td>2100009</td>
+								<td>69300009</td>
+							</tr>
+							<tr>
+								<!--<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>-->
+								<td>Rmat_22</td>
+								<td>4194219</td>
+								<td>64303084</td>
+							</tr>
+							<!--<tr>
+								-<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>
+								<td>Rmat_22_2</td>
+								<td>4194219</td>
+								<td>64303084</td>
+							</tr>-->
+							<!--<tr>
+								<td>
+									<th><input type="checkbox" id="check-all" class="flat"></th>
+								</td>
+								<td>Facebook</td>
+								<td>4039</td>
+								<td>176470</td>
+							</tr>-->
+						</tbody>
+					</table>
+				 </div>
+                </div>
+				</div>
+				
+					
+					<!-- run -->
+					<div class="col-md-4 col-md-4 ">
+						<div class="x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">数据集&算法</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content" style="height:410px">
+								<br />
+								<form class="form-horizontal form-label-left" target="iframe_acc">
+									<div class="form-group row">
+										<label class="control-label col-md-3 col-sm-3 " style="font-size:18px">数据集</label>
+										<div class="col-md-9 col-sm-9 ">
+											<select class="select2_single form-control" tabindex="-1" id='dataset'>
+												<option value="none">请选择</option>
+												<option value="wiki">Wiki</option>
+												<option value="gplus">Gplus</option>
+												<option value="orkut">Orkut</option>
+												<option value="rmat19">Rmat_19</option>
+												<option value="rmat20">Rmat_20</option>
+												<option value="rmat21">Rmat_21</option>
+												<option value="rmat22">Rmat_22</option>
+												<!--<option value="Rmat_22_2">Rmat_22_2</option>-->
+												<!--<option value="facebook">Facebook</option>-->
+											</select>
+										</div>
+									</div>
+									
+									<div class="form-group row">
+										<label class="control-label col-md-3 col-sm-3 " style="font-size:18px">算法</label>
+										<div class="col-md-9 col-sm-9 ">
+											<select class="select2_single form-control" tabindex="-1" id='algorithm'>
+												<option value="none">请选择</option>
+												<option value="pagerank">pagerank</option>
+												<option value="bfs">bfs</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="ln_solid"></div>
+									<div class="form-group">
+										<div class="col-md-9 col-sm-9  offset-md-3">
+											<button type="reset" class="btn btn-primary" id='accelerator_reset'>重置</button>
+											<button type="submit" class="btn btn-success" id='accelerator_run'>运行</button>
+											<button type="submit" class="btn btn-success" id='code_show'>代码</button>
+										</div>
+									</div>
+								</form>
+
+								<iframe name="iframe_acc" style="display:none;"></iframe>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-4 col-md-4 " id="terminal">
+					
+						<div class="x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">控制台输出</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+							
+							<div class="x_content" >
+								<div id="acc_run_ans"></div>
+							
+								<div id="loading_terminal" class="l-wrapper" style="display: none;margin-top:80px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+					 
+					
+<!--					<div class="loader" id="loading_div" >
+						<div>L</div>
+						<div>O</div>
+						<div>A</div>
+						<div>D</div>
+						<div>I</div>
+						<div>N</div>
+						<div>G</div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+-->
+				</div>
+				
+				<div class="clearfix"></div>
+				
+				<div class="row">
+
+					<div class="col-md-6 col-md-6">
+						<div class= "x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">BFS性能对比</h2>
+								<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+								<li><a class="close-link"><i class="fa fa-close"></i></a>
+								</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+					
+							<div class="x_content">
+								<div id="bfs_bardata"></div>
+								<div id="loading_bfs_bardata" class="l-wrapper" style="display: none;margin-top:80px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+					
+						</div>
+					</div>
+					
+					<div class="col-md-6 col-md-6">
+						<div class= "x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">BFS性能功耗比对比</h2>
+								<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+								<li><a class="close-link"><i class="fa fa-close"></i></a>
+								</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+					
+							<div class="x_content">
+								<div id="bfs_power_bardata"></div>
+								<div id="loading_bfs_power_bardata" class="l-wrapper" style="display: none;margin-top:80px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+
+				<div class="row">
+
+					<!--<div class="col-md-4 col-md-4">
+					
+					</div>--> 
+
+
+					<div class="col-md-6 col-md-6">
+						<div class= "x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">PageRank性能对比</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+							<div class="clearfix"></div>
+						</div>
+						
+						<div class="x_content">
+							<div id="pr_bardata"></div>
+								<div id="loading_pr_bardata" class="l-wrapper" style="display: none;margin-top:80px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-6 col-md-6">
+						<div class= "x_panel">
+							<div class="x_title">
+								<h2 style="font-size:22px">PageRank每轮迭代时间对比</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+					
+							<div class="x_content">
+								<div id="pr_time_bardata"></div>
+								<div id="loading_pr_time_bardata" class="l-wrapper" style="display: none;margin-top:80px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+<!--				
+				<div class="row">
+				
+
+					<div class="col-md-12 col-sm-12 ">
+					  <div class="x_title">
+						<div class="col-md-6">
+							<h3>代码展示</h3>
+						</div>
+						<div class="col-md-6">
+							<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+							</ul>
+						</div>
+						<div class="clearfix"></div>
+					  </div>
+
+					  <div class="x_content">
+						<div class="col-md-3 col-sm-3 ">
+							<br />
+							<form class="form-horizontal form-label-left" target="iframe_acc">
+								<div class="form-group row">
+									<label class="control-label col-md-3 col-sm-3 ">算法</label>
+									<div class="col-md-9 col-sm-9 ">
+										<select class="select2_single form-control" tabindex="-1" id='code_option'>
+											<option value="none">请选择</option>
+											<option value="BFS">BFS</option>
+											<option value="PageRank">PageRank</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="ln_solid"></div>
+								<div class="form-group">
+									<div class="col-md-9 col-sm-9  offset-md-3">
+										<button type="reset" class="btn btn-primary" id='code_reset'>重置</button>
+										<button type="submit" class="btn btn-success" id='code_show'>显示</button>
+									</div>
+								</div>
+							</form>
+							
+							<iframe name="iframe_acc" style="display:none;"></iframe>
+						</div>
+						
+						<div class="col-md-9 col-sm-9 ">
+							</br >
+							<div class="col-md-12 col-sm-12 " >
+								<textarea class="resizable_textarea form-control" placeholder="BFS/PageRank代码..." style="height: 400px" id="acc_code"></textarea>
+							</div>
+						</div>
+					
+					  </div>
+					</div>
+					
+					
+				</div>
+-->
+
+
+
+
+            </div>
+
+          </div>
+          <br />
+
+        </div>
+
+	
+    <!-- jQuery -->
+    <script src="{% static 'vendors/jquery/dist/jquery.min.js' %}"></script>
+	<!-- Bootstrap -->
+    <script src="{% static 'vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+	<!-- FastClick -->
+    <script src="{% static 'vendors/fastclick/lib/fastclick.js' %}"></script>
+	<!-- NProgress -->
+    <script src="{% static 'vendors/nprogress/nprogress.js' %}"></script>
+	<!-- Chart.js -->
+    <script src="{% static 'vendors/Chart.js/dist/Chart.min.js' %}"></script>
+	<!-- gauge.js -->
+    <script src="{% static 'vendors/gauge.js/dist/gauge.min.js' %}"></script>
+	<!-- bootstrap-progressbar -->
+    <script src="{% static 'vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
+	<!-- iCheck -->
+    <script src="{% static 'vendors/iCheck/icheck.min.js' %}"></script>
+	<!-- Skycons -->
+    <script src="{% static 'vendors/skycons/skycons.js' %}"></script>
+	<!-- Flot -->
+    <script src="{% static 'vendors/flot/jquery.flot.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.pie.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.time.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.stack.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.resize.js' %}"></script>
+	<!-- Flot plugins -->
+    <script src="{% static 'vendors/flot.orderbars/js/jquery.flot.orderBars.js' %}"></script>
+	<script src="{% static 'vendors/flot-spline/js/jquery.flot.spline.min.js' %}"></script>
+	<script src="{% static 'vendors/flot.curvedlines/curvedLines.js' %}"></script>
+	<!-- DateJS -->
+    <script src="{% static 'vendors/DateJS/build/date.js' %}"></script>
+	<!-- JQVMap -->
+    <script src="{% static 'vendors/jqvmap/dist/jquery.vmap.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/dist/maps/jquery.vmap.world.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/examples/js/jquery.vmap.sampledata.js' %}"></script>
+	<!-- bootstrap-daterangepicker -->
+	<script src="{% static 'vendors/moment/min/moment.min.js' %}"></script>
+	<script src="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+    <!-- Custom Theme Scripts -->
+	<script src="{% static 'build/js/custom.min.js' %}"></script>
+
+
+  </body>
+</html>

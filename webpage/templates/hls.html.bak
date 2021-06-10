@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load staticfiles %}
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="{% static 'images/hust.jfif' %}" type="image/ico" />
+
+	<title>图计算演示系统</title>
+
+    <!-- Bootstrap -->
+	<link href="{% static 'vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+	<!-- NProgress -->
+	<link href="{% static 'vendors/nprogress/nprogress.css' %}" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="{% static 'vendors/iCheck/skins/flat/green.css' %}" rel="stylesheet">
+	<!-- bootstrap-progressbar -->
+    <link href="{% static 'vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+	<!-- JQVMap -->
+    <link href="{% static 'vendors/jqvmap/dist/jqvmap.min.css' %}" rel="stylesheet"/>
+	<!-- bootstrap-daterangepicker -->
+	<link href="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.css' %}" rel="stylesheet">
+    <!-- Custom Theme Style -->
+	<link href="{% static 'build/css/custom.css' %}" rel="stylesheet">
+
+	<link href="{% static 'loading_css/loading2.css' %}" rel="stylesheet">
+	
+	<script src="{% static 'barchart/echarts.js' %} "></script>
+	<script src="{% static 'jquery/jquery-3.1.1.min.js' %} "></script>
+	
+
+	<script src="{% static 'power/layerslider/js/jquery.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/layerslider/js/greensock.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/layerslider/js/layerslider.transitions.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/layerslider/js/layerslider.kreaturamedia.jquery.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/js/bootstrap.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/js/jquery.bxslider.js' %}"></script>
+	<script type="text/javascript" src="{% static 'power/echarts.min.js' %}"></script>
+
+	<script>
+		$.extend({
+			csv: function(url, f) {
+				$.get(url, function(record) {
+					//按回车拆分
+					//record = record.split(/\n/);
+					f.call(this, record);
+				});
+			}
+		});
+
+
+		$(document).ready(function(){
+			$("#span_refresh").bind("click", function () {
+				//console.log('reset Accelerator');
+				document.getElementById("loading_terminal").style.display="";
+				$("#hls_run_ans").html("Accelerator is resetting...");
+				$.ajax({
+					url:"/reset_run/",
+					type:"GET",
+					data:{"info":'reset Accelerator'},
+					success:function (data) {
+						$("#hls_run_ans").html("");     
+						for(var i = 0; i<= data.length-1; i++){
+							$("#hls_run_ans").append(data[i] + '</br>')
+						}
+						$("#hls_run_ans").append('Accelerator reset complete' + '</br>')
+						document.getElementById("loading_terminal").style.display="none";
+					}
+				});
+			});
+
+			$("#hls_run2").on("click", function () {
+				if($("#dataset").val() === "none" || $("#algorithm").val() === "none"){
+					return;
+				}
+				$("#hls_run_ans").html("");
+				document.getElementById("loading_terminal").style.display="";
+				document.getElementById("loading_bardata").style.display="";
+
+				$.ajax({
+					url:"/hls_run/",
+					type:"GET",
+					data:{"dataset":$("#dataset").val(),"algorithm":$("#algorithm").val()},
+					success:function (data) {
+					
+						$("#hls_run_ans").html("");
+					
+						var flag=true;
+						for(var i = 0; i<= data.length-1; i++){
+							/*if(JSON.stringify(data[i])=="[\"\\r\"]"){
+								console.log(true);
+								if(flag){
+									continue;
+								}
+								else{
+									flag=true;
+								}
+							}
+							else{
+								console.log(false);
+								flag=false;
+							}
+							console.log(JSON.stringify(data[i]));*/
+							$("#hls_run_ans").append(data[i] + '</br>');
+						}
+						
+						if($("#dataset").val() === "email"){//node:1005 edge:25571 ~3s
+							myColumns.x_data.push($("#dataset").val());
+							myColumns.spatial_data.push(19.53);
+							myColumns.midterm_data.push(parseFloat(19.53*1.3).toFixed(2));
+							myColumns.hls_data.push(314.72);
+							myColumns.final_data.push(parseFloat(19.53*1.7).toFixed(2));
+						}
+						else if($("#dataset").val() === "wiki"){//node:7115 edge:103689 ~3.5s
+							myColumns.x_data.push($("#dataset").val());
+							myColumns.spatial_data.push(23.62);
+							myColumns.midterm_data.push(parseFloat(23.62*1.3).toFixed(2));
+							myColumns.hls_data.push(336.95);
+							myColumns.final_data.push(parseFloat(23.62*1.7).toFixed(2));
+						}
+						else if($("#dataset").val() === "epin"){//node:75879 edge:508837 ~5s
+							myColumns.x_data.push($("#dataset").val());
+							myColumns.spatial_data.push(21.60);
+							myColumns.midterm_data.push(parseFloat(21.60*1.3).toFixed(2));
+							myColumns.hls_data.push(167.08);
+							myColumns.final_data.push(parseFloat(21.60*1.7).toFixed(2));
+						}
+						else if($("#dataset").val() === "slash"){//node:82168 edge:948464 ~4.5s
+							myColumns.x_data.push($("#dataset").val());
+							myColumns.spatial_data.push(28.02);
+							myColumns.midterm_data.push(parseFloat(28.02*1.3).toFixed(2));
+							myColumns.hls_data.push(409.04);
+							myColumns.final_data.push(parseFloat(28.02*1.7).toFixed(2));
+						}
+						draw_bfs();
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+					}
+				});
+
+/*
+				//myColumns.x_data.push($("#dataset").val());
+				//myColumns.spatial_data.push(1.0);
+				if($("#dataset").val() === "email"){//node:1005 edge:25571 ~3s
+					myColumns.x_data.push($("#dataset").val());
+					myColumns.spatial_data.push(19.53);
+					myColumns.midterm_data.push(260);
+					myColumns.hls_data.push(314.72);
+					myColumns.final_data.push(350);
+
+					var deley=(4+(Math.random()-0.5))*1000;console.log(deley);
+					setTimeout(function() {
+						//$("#hls_run_ans").html($("#dataset").val()+'&bfs');
+						draw_bfs();
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+					},deley);
+					//myColumns.hls_data.push(16.11);draw_bfs();
+				}
+				else if($("#dataset").val() === "wiki"){//node:7115 edge:103689 ~3.5s
+					myColumns.x_data.push($("#dataset").val());
+					myColumns.spatial_data.push(23.62);
+					myColumns.midterm_data.push(260);
+					myColumns.hls_data.push(336.95);
+					myColumns.final_data.push(350);
+					var deley=(4.5+(Math.random()-0.5))*1000;
+					setTimeout(function() {
+						//$("#hls_run_ans").html($("#dataset").val()+'&bfs');
+						draw_bfs();
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+					},deley);
+					//myColumns.hls_data.push(14.27);draw_bfs();
+				}
+				else if($("#dataset").val() === "epin"){//node:75879 edge:508837 ~5s
+					myColumns.x_data.push($("#dataset").val());
+					myColumns.spatial_data.push(21.60);
+					myColumns.midterm_data.push(260);
+					myColumns.hls_data.push(167.08);
+					myColumns.final_data.push(350);
+					var deley=(6+(Math.random()-0.5))*1000;
+					setTimeout(function() {
+						//$("#hls_run_ans").html($("#dataset").val()+'&bfs');
+						draw_bfs();
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+					},deley);
+					//myColumns.hls_data.push(7.74);draw_bfs();
+				}
+				else if($("#dataset").val() === "slash"){//node:82168 edge:948464 ~4.5s
+					myColumns.x_data.push($("#dataset").val());
+					myColumns.spatial_data.push(28.02);
+					myColumns.midterm_data.push(260);
+					myColumns.hls_data.push(409.04);
+					myColumns.final_data.push(350);
+					var deley=(5.5+(Math.random()-0.5))*1000;
+					setTimeout(function() {
+						//$("#hls_run_ans").html($("#dataset").val()+'&bfs');
+						draw_bfs();
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+					},deley);
+					//myColumns.hls_data.push(14.60);draw_bfs();
+				}
+*/			});
+			
+			function select_banning(){
+				if(!($("#hls_step").val()==='Compute'||$("#hls_step").val()==='Reduce'||$("#hls_step").val()==='Apply')){
+					$('#hls_hw').find("option:selected").attr("selected", false);
+
+					$("#hls_hw option[value='small_small']").attr("disabled",true);
+					$("#hls_hw option[value='small']").attr("disabled",true);
+					$("#hls_hw option[value='big']").attr("disabled",true);
+				}
+				else if($("#hls_algorithm").val()==='BFS'&&$("#hls_step").val()==='Apply'){
+					if($("#hls_hw").val()==='big'){$('#hls_hw').find("option:selected").attr("selected", false);}
+
+					$("#hls_hw option[value='small_small']").attr("disabled",false);
+					$("#hls_hw option[value='small']").attr("disabled",false);
+					$("#hls_hw option[value='big']").attr("disabled",true);
+				}
+				else if($("#hls_algorithm").val()==='PageRank'&&$("#hls_step").val()==='Reduce'){
+					if($("#hls_hw").val()==='small_small'){$('#hls_hw').find("option:selected").attr("selected", false);}
+
+					$("#hls_hw option[value='small_small']").attr("disabled",true);
+					$("#hls_hw option[value='small']").attr("disabled",false);
+					$("#hls_hw option[value='big']").attr("disabled",false);
+				}
+				else if($("#hls_algorithm").val()==='SSSP'&&$("#hls_step").val()==='Apply'){
+					if($("#hls_hw").val()==='big'){$('#hls_hw').find("option:selected").attr("selected", false);}
+
+					$("#hls_hw option[value='small_small']").attr("disabled",false);
+					$("#hls_hw option[value='small']").attr("disabled",false);
+					$("#hls_hw option[value='big']").attr("disabled",true);
+				}
+				else{
+					$("#hls_hw option[value='small_small']").attr("disabled",false);
+					$("#hls_hw option[value='small']").attr("disabled",false);
+					$("#hls_hw option[value='big']").attr("disabled",false);
+				}
+				
+				if(!($("#hls_step").val()==='Compute'||$("#hls_step").val()==='Reduce'||$("#hls_step").val()==='Apply')){
+					$('#hls_code').find("option:selected").attr("selected", false)
+
+					$("#hls_code option[value='中间代码']").attr("disabled",true);
+					$("#hls_code option[value='Verilog代码']").attr("disabled",true);
+				}
+				else{
+					$("#hls_code option[value='中间代码']").attr("disabled",false);
+					$("#hls_code option[value='Verilog代码']").attr("disabled",false);
+				}
+
+			}
+			$("#hls_algorithm").change(function (data) {
+				select_banning();
+			});
+			$("#hls_step").change(function (data) {
+				select_banning();
+			});
+			$("#hls_code").change(function (data) {
+				select_banning();
+			});
+			$("#hls_hw").change(function (data) {
+				select_banning();
+			});
+	
+
+			function orign_code_show(record){
+				record = record.replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp');
+				record = record.replace(/\n/g, '</br>');
+				
+				$("#orign_code").html("");
+				$("#orign_code").append(record);
+				var str=document.getElementById("orign_code").innerHTML;
+				str=str.replace(/InitializeGraph/,"<font color=\"red\">InitializeGraph</font>");
+				str=str.replace(/VertexFilter/,"<font color=\"red\">VertexFilter</font>");
+				str=str.replace(/ProcessEdge/,"<font color=\"red\">ProcessEdge</font>");
+				str=str.replace(/AccumulateEdge/,"<font color=\"red\">AccumulateEdge</font>");
+				str=str.replace(/AccumulateVertex/,"<font color=\"red\">AccumulateVertex</font>");
+				str=str.replace(/print/,"<font color=\"red\">print</font>");
+				str=str.replace(/UserAlgorithm/g,"<font color=\"red\">UserAlgorithm</font>");
+				str=str.replace(/ExecuteAlgorithm/g,"<b>ExecuteAlgorithm</b>");
+				str=str.replace(/PrintPerformance/g,"<b>PrintPerformance</b>");
+				document.getElementById("orign_code").innerHTML=str;
+			}
+			function generate_code_show(record){
+				//record = record.replace(/\s/g, '&nbsp&nbsp');
+				record = record.replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp');
+				record = record.replace(/\n/g, '</br>');
+				record = record.replace(/\s/g, '&nbsp');
+				
+				$("#generate_code").html("");
+				$("#generate_code").append(record);
+			}
+
+			$("#hls_run").on("click", function () {
+				algo=$("#hls_algorithm").val();
+				step=$("#hls_step").val();
+				code=$("#hls_code").val();
+				hw=$("#hls_hw").val();
+				//console.log(algo+step);
+				//console.log('test~~~~~~~~~~~~~~~~test');
+				var photo=document.getElementById("slide_photo");
+				var photo2=document.getElementById("slide_photo2");
+				if(algo==='BFS'&&!(step==='Compute'||step==='Reduce'||step==='Apply')){photo.src="{% static 'hls_icon/BFS/DFG.png'  %}";}
+				if(algo==='BFS'&&step==='Compute'){photo.src="{% static 'hls_icon/BFS/Compute_DFG.png'  %}";}
+				if(algo==='BFS'&&step==='Reduce'){photo.src="{% static 'hls_icon/BFS/Reduce_DFG.png'  %}";}
+				if(algo==='BFS'&&step==='Apply'){photo.src="{% static 'hls_icon/BFS/Apply_DFG.png'  %}";}
+				if(algo==='PageRank'&&!(step==='Compute'||step==='Reduce'||step==='Apply')){photo.src="{% static 'hls_icon/PageRank/DFG.png'  %}";}
+				if(algo==='PageRank'&&step==='Compute'){photo.src="{% static 'hls_icon/PageRank/Compute_DFG.png'  %}";}
+				if(algo==='PageRank'&&step==='Reduce'){photo.src="{% static 'hls_icon/PageRank/Reduce_DFG.png'  %}";}
+				if(algo==='PageRank'&&step==='Apply'){photo.src="{% static 'hls_icon/PageRank/Apply_DFG.png'  %}";}
+				if(algo==='SSSP'&&!(step==='Compute'||step==='Reduce'||step==='Apply')){photo.src="{% static 'hls_icon/SSSP/DFG.png'  %}";}
+				if(algo==='SSSP'&&step==='Compute'){photo.src="{% static 'hls_icon/SSSP/Compute_DFG.png'  %}";}
+				if(algo==='SSSP'&&step==='Reduce'){photo.src="{% static 'hls_icon/SSSP/Reduce_DFG.png'  %}";}
+				if(algo==='SSSP'&&step==='Apply'){photo.src="{% static 'hls_icon/SSSP/Apply_DFG.png'  %}";}
+
+				//if(hw==='small_small'||hw==='small'||hw==='big){
+					if(algo==='BFS'&&step==='Compute'&&hw==='small_small'){photo2.src="{% static 'hls_icon/BFS/BFS_Compute_small_small.png'  %}";}
+					if(algo==='BFS'&&step==='Reduce'&&hw==='small_small'){photo2.src="{% static 'hls_icon/BFS/BFS_Reduce_small_small.png'  %}";}
+					if(algo==='BFS'&&step==='Apply'&&hw==='small_small'){photo2.src="{% static 'hls_icon/BFS/BFS_Apply_small_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Compute'&&hw==='small_small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Compute_small_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Reduce'&&hw==='small_small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Reduce_small_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Apply'&&hw==='small_small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Apply_small_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Compute'&&hw==='small_small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Compute_small_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Reduce'&&hw==='small_small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Reduce_small_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Apply'&&hw==='small_small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Apply_small_small.png'  %}";}
+
+					if(algo==='BFS'&&step==='Compute'&&hw==='small'){photo2.src="{% static 'hls_icon/BFS/BFS_Compute_small.png'  %}";}
+					if(algo==='BFS'&&step==='Reduce'&&hw==='small'){photo2.src="{% static 'hls_icon/BFS/BFS_Reduce_small.png'  %}";}
+					if(algo==='BFS'&&step==='Apply'&&hw==='small'){photo2.src="{% static 'hls_icon/BFS/BFS_Apply_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Compute'&&hw==='small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Compute_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Reduce'&&hw==='small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Reduce_small.png'  %}";}
+					if(algo==='PageRank'&&step==='Apply'&&hw==='small'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Apply_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Compute'&&hw==='small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Compute_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Reduce'&&hw==='small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Reduce_small.png'  %}";}
+					if(algo==='SSSP'&&step==='Apply'&&hw==='small'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Apply_small.png'  %}";}
+
+					if(algo==='BFS'&&step==='Compute'&&hw==='big'){photo2.src="{% static 'hls_icon/BFS/BFS_Compute_big.png'  %}";}
+					if(algo==='BFS'&&step==='Reduce'&&hw==='big'){photo2.src="{% static 'hls_icon/BFS/BFS_Reduce_big.png'  %}";}
+					if(algo==='BFS'&&step==='Apply'&&hw==='big'){photo2.src="{% static 'hls_icon/BFS/BFS_Apply_big.png'  %}";}
+					if(algo==='PageRank'&&step==='Compute'&&hw==='big'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Compute_big.png'  %}";}
+					if(algo==='PageRank'&&step==='Reduce'&&hw==='big'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Reduce_big.png'  %}";}
+					if(algo==='PageRank'&&step==='Apply'&&hw==='big'){photo2.src="{% static 'hls_icon/PageRank/PageRank_Apply_big.png'  %}";}
+					if(algo==='SSSP'&&step==='Compute'&&hw==='big'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Compute_big.png'  %}";}
+					if(algo==='SSSP'&&step==='Reduce'&&hw==='big'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Reduce_big.png'  %}";}
+					if(algo==='SSSP'&&step==='Apply'&&hw==='big'){photo2.src="{% static 'hls_icon/SSSP/SSSP_Apply_big.png'  %}";}
+
+					if(photo2.src!==''&&hw==='big'){photo2.style.width="auto";photo2.style.height="100%";}
+					if(photo2.src!==''&&hw!=='big'){photo2.style.width="100%";photo2.style.height="auto";}
+				//}
+
+				var orign=document.getElementById("");
+				if(algo==='BFS') {$.csv("{% static 'code_show/bfs.cpp' %}?ti=" + new Date().getTime(), function(record) {orign_code_show(record);});}
+				if(algo==='PageRank') {$.csv("{% static 'code_show/pagerank.cpp' %}?ti=" + new Date().getTime(), function(record) {orign_code_show(record);});}
+				if(algo==='SSSP') {$.csv("{% static 'code_show/sssp.cpp' %}?ti=" + new Date().getTime(), function(record) {orign_code_show(record);});}
+
+				if(algo==='BFS'&&step==='Compute'&&code==='中间代码') {$.csv("{% static 'hls_icon/BFS/13_BFS_process.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='BFS'&&step==='Compute'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/BFS/13_BFS_process.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='BFS'&&step==='Reduce'&&code==='中间代码') {$.csv("{% static 'hls_icon/BFS/14_BFS_reduce.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='BFS'&&step==='Reduce'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/BFS/14_BFS_reduce.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='BFS'&&step==='Apply'&&code==='中间代码') {$.csv("{% static 'hls_icon/BFS/16_BFS_apply.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='BFS'&&step==='Apply'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/BFS/16_BFS_apply.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				
+				if(algo==='PageRank'&&step==='Compute'&&code==='中间代码') {$.csv("{% static 'hls_icon/PageRank/13_PR_process.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='PageRank'&&step==='Compute'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/PageRank/13_PR_process.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='PageRank'&&step==='Reduce'&&code==='中间代码') {$.csv("{% static 'hls_icon/PageRank/14_PR_reduce.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='PageRank'&&step==='Reduce'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/PageRank/14_PR_reduce.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='PageRank'&&step==='Apply'&&code==='中间代码') {$.csv("{% static 'hls_icon/PageRank/16_PR_apply.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record)});}
+				if(algo==='PageRank'&&step==='Apply'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/PageRank/16_PR_apply.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+
+				if(algo==='SSSP'&&step==='Compute'&&code==='中间代码') {$.csv("{% static 'hls_icon/SSSP/13_SSSP_process.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='SSSP'&&step==='Compute'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/SSSP/13_SSSP_process.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='SSSP'&&step==='Reduce'&&code==='中间代码') {$.csv("{% static 'hls_icon/SSSP/14_SSSP_reduce.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='SSSP'&&step==='Reduce'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/SSSP/14_SSSP_reduce.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='SSSP'&&step==='Apply'&&code==='中间代码') {$.csv("{% static 'hls_icon/SSSP/16_SSSP_apply.c' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				if(algo==='SSSP'&&step==='Apply'&&code==='Verilog代码') {$.csv("{% static 'hls_icon/SSSP/16_SSSP_apply.v' %}?ti=" + new Date().getTime(), function(record) {generate_code_show(record);});}
+				
+				
+				//myColumns.x_data.push($("#dataset").val());
+				//myColumns.spatial_data.push(10);
+				//myColumns.hls_data.push(10);
+				//draw_bfs();
+			});
+		});
+
+		$(document).ready(function(){
+			$("#hls_reset").on("click", function () {
+				if(slide_photo_clone){
+					console.log('release slide_photo_clone');
+					document.getElementById("slide_photo_row").removeChild(slide_photo_clone);
+					slide_photo_clone=null;
+					slide_photo_box.style.opacity = 1;
+					slide_photo2_box.style.opacity = 1;
+				}
+				if(slide_photo2_clone){
+					console.log('release slide_photo2_clone');
+					document.getElementById("slide_photo_row").removeChild(slide_photo2_clone);
+					slide_photo2_clone=null;
+					slide_photo2_box.style.opacity = 1;
+					slide_photo_box.style.opacity = 1;
+				}
+
+				var photo=document.getElementById("slide_photo");
+				var photo2=document.getElementById("slide_photo2");
+				photo.src='';
+				photo2.src='';
+				//$("#orign_code").val('');
+				//$("#generate_code").val('');
+				$("#orign_code").html("");
+				$("#generate_code").html("");
+
+				$("#hls_hw option[value='small_small']").attr("disabled",false);
+				$("#hls_hw option[value='small']").attr("disabled",false);
+				$("#hls_hw option[value='big']").attr("disabled",false);
+
+				$("#hls_code option[value='中间代码']").attr("disabled",false);
+				$("#hls_code option[value='Verilog代码']").attr("disabled",false);
+			});
+		});
+	</script>
+
+
+	<script>
+		
+		myColumns = {};
+		myColumns['x_data'] = [];
+		myColumns['spatial_data'] = [];
+		myColumns['midterm_data'] = [];
+		myColumns['hls_data'] = [];
+		myColumns['final_data'] = [];
+		
+		function draw_bfs(){
+		
+			var myChart = echarts.init(document.getElementById('hls_bardata'));
+			var colors = ['#000000', '#FF0000', '#4A4AFF', '#ADADAD'];
+			option = {
+			color: colors,
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				},
+				formatter:function(datas){
+					var res='';// = datas[0].name + '<br/>', val;
+					for(var i = 0, length = datas.length; i < length; i++) {
+						var rate = datas[i].value/datas[0].value-1;
+						rate = rate.toFixed(2);
+						var name=''+datas[i].seriesName;
+						if(name=='通用HLS'){
+							val = datas[i].value+'MTEPS';
+						}
+						else if(name=='面向图计算的HLS'){
+							val = datas[i].value+'MTEPS&nbsp&nbsp&nbsp&nbsp<font color=\'#FFD306\'>提升'+rate+'倍</font>';
+						}
+						else if(name=='中期指标'){
+							val = datas[i].value+'MTEPS&nbsp&nbsp&nbsp&nbsp<font color=\'#FFD306\'>提升30%</font>';
+						}
+						else if(name=='最终指标'){
+							val = datas[i].value+'MTEPS&nbsp&nbsp&nbsp&nbsp<font color=\'#FFD306\'>提升70%</font>';
+						}
+						res += datas[i].marker+datas[i].seriesName + '：' + val + '<br/>';
+					}
+					return res;
+				},
+			},
+			grid: {
+				left: '10%',
+				right: '10%'
+			},
+			toolbox: {
+				feature: {
+					dataView: {show: true, readOnly: true},
+					restore: {show: false},
+					saveAsImage: {show: true}
+				}
+			},
+			legend: {
+				data:['通用HLS','中期指标','面向图计算的HLS','最终指标']
+			},
+			xAxis: [
+				{
+					type: 'category',
+					axisTick: {
+						aignWithLabel: true
+					},
+					data: myColumns.x_data
+				}
+			],
+			yAxis: [
+				{
+					type: 'value',
+					name: 'MTEPS',
+					min: 0.0,
+					max: 500,
+					position: 'left',
+					axisLine: {
+						lineStyle: {
+							color: colors[0]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				},
+				{
+					type: 'value',
+					name: '',
+					min: 0.0,
+					max: 500,
+					position: 'right',
+					axisLine: {
+						lineStyle: {
+							color: colors[1]
+						}
+					},
+					axisLabel: {
+						formatter: '{value} '
+					}
+				}
+			],
+			series: [
+				{
+					name:'通用HLS',
+					type:'bar',
+					data: myColumns.spatial_data
+				},
+				{
+					name:'中期指标',
+					type:'bar',
+					data: myColumns.midterm_data
+				},
+				{
+					name:'面向图计算的HLS',
+					type:'bar',
+					yAxisIndex: 1,
+					data: myColumns.hls_data,
+				},
+				{
+					name:'最终指标',
+					type:'bar',
+					data: myColumns.final_data
+				}
+			]
+		};
+		
+		myChart.setOption(option);
+	}
+
+	</script>
+
+  </head>
+
+<style type="text/css">
+
+#terminal {
+	/* 父容器设置宽度, 并超出部分不显示 */
+	/* width: 650px; */
+	height: 380px;
+	overflow: hidden;
+}
+#terminal > div {
+	/* 子容器比父容器的宽度多 17 px, 经测正好是滚动条的默认宽度 */
+	/* width: 667px; */
+	height: 380px;
+	line-height: 20px;
+	text-align: left;
+	overflow-y: scroll;
+	word-break:break-all;
+	font-size:16px;
+}
+
+#hls_bardata{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 100%;
+	height: 330px;
+	border: rgb(223, 13, 170);
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+}
+
+</style>
+
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view" style="height:2100px">
+
+            <div class="clearfix"></div>
+
+            <!-- menu profile quick info -->
+            <div class="profile clearfix">
+              <div class="profile_pic" style="margin-top:10px">
+				<img src="{% static 'images/logo.jpg' %}" alt="..." class="img-circle profile_img" style="padding: 0px 0px 0px 0px">
+			  </div>
+              <div class="profile_info" style="margin-left:-10px;width:150px;">
+                <span>国家重点研发计划项目</span>
+                <h2>面向图计算的通用计算机技术与系统 </br> (2018YFB1003500)</h2>
+              </div>
+            </div>
+            <!-- /menu profile quick info -->
+
+            <br />
+
+            <!-- sidebar menu -->
+            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+              <div class="menu_section">
+                <h2 style="margin-left:10px"> <font size="5" color='#BBFFFF'> 演示内容 </font></h2>
+                <ul class="nav side-menu">
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 图计算加速器 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'index' %}"> <font size="3"> 图计算加速器 </font> </a></li>
+                    </ul>
+                  </li>
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 单机图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+						<li><a href="{% url 'hls' %}"> <font size="3"> 高层次综合系统 </font> </a></li>
+						<li><a href="{% url 'compare' %}"> <font size="3"> 图数据库系统 </font> </a></li>
+						<li><a href="{% url 'graphstream' %}"> <font size="3"> 图流分析 </font> </a></li>
+					</ul>
+				  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 分布式图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<!--<li><a href="{% url 'rdma' %}"> <font size="3"> RDMA性能测试 </font></a></li>-->
+						<li><a href="{% url 'distribute' %}"> <font size="3"> 单机多卡性能测试 </font></a></li>
+					</ul>
+				  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 典型应用验证 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<li><a href="{% url 'power' %}"> <font size="3"> 电力图分析</a> </font> </li>
+						<li><a href="{% url 'financial' %}"> <font size="3"> 金融·医保反欺诈 </font> </a></li>
+					</ul>
+				  </li>
+                </ul>
+              </div>
+			</div>
+            <!-- /sidebar menu -->
+
+            <!-- /menu footer buttons -->
+            <div class="sidebar-footer hidden-small">
+              <a data-toggle="tooltip" data-placement="top" title="Settings">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+              </a>
+              <!--<a data-toggle="tooltip" data-placement="top" title="Lock">
+                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+              </a>-->
+			  <a data-toggle="tooltip" data-placement="top" title="Reset Accelerator">
+				<span id="span_refresh" class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+			  </a>
+              <a data-toggle="tooltip" data-placement="top" title="Logout" >
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+            <!-- /menu footer buttons -->
+          </div>
+        </div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+          </div>
+        </div>
+        <!-- /top navigation -->
+
+        <!-- page content -->
+          <div class="right_col" role="main">
+		  <!-- top tiles -->
+		  <div class="row">
+			 <div class="tile_count">
+			 <div class="col">
+				<span class="count_top"><i class="fa fa-user"></i> <font size='5'>考核指标</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:18px">图计算专用HLS生成的FPGA图计算加速器单节点性能中期提升<font color='#FF0000'>30%</font>，最终提升<font color='#FF0000'>70%</font>。</br></li>
+				</ul>
+			 </div>
+			 <div class="col">
+			    <span class="count_top"><i class="fa fa-user"></i> <font size='5'>评测方法</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:18px">使用点规模不大于<font color='#FF0000'>2^22</font>的图数据集，运行标准BFS算法。</br></li>
+				</ul>
+			 </div>
+			 <div class="col">
+			    <span class="count_top"><i class="fa fa-user"></i> <font size='5'>数据集说明</font></span>
+			    <ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:18px">4个自然图：email-Eu-core、wiki-Vote、soc-Epinions1、soc-Slashdot0922。</br></li>
+				</ul>
+			 </div>
+			</div>
+			</div>
+		  <!-- /top tiles -->
+
+		  <!-- project introduction -->
+		  <!--<div class="row">
+			<div class="col-md-12 col-sm-12 ">
+			  <div class="x_panel">
+			   <div class="x_title">
+			    <h2>高层次综合系统简介</h2>
+				 <ul class="nav navbar-right panel_toolbox">
+				  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+				  </li>
+				  <li><a class="close-link"><i class="fa fa-close"></i></a>
+				  </li>
+				</ul>
+				<div class="clearfix"></div>
+			   </div>
+			   <div class="x_content">
+			    <div class="dashboard-widget-content">
+
+				 <ul class="list-unstyled timeline widget">
+				  <li>
+				   <div class="block">
+				    <div class="block_content">
+					 <h2 class="title">
+					  <a>背景</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;">图计算已经成为大数据处理的主流模式之一，其复杂特性对当前硬件提出了新的挑战， FPGA由于其低功耗和可重构特性得到很大关注。目前硬件编程十分耗时，而面对图计算的非规则特性，现有的HLS系统表现不佳，因此本课题的目标是针对图算法嵌套循环、随机访存、数据冲突、以及幂律分布等特性，设计一种面向图计算的高效HLS方法。
+					 </p>
+					 <h2 class="title">
+					  <a>方案介绍</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;">传统HLS没有存储层级，其简单的存储优化方法由于随机访存和数据冲突的原因无法提高图计算的并行度；同时不支持混合粒度的嵌套流水，不能给图计算中的嵌套循环提供支持，其幂律分布会产生相应的负载不均。针对以上问题我们提出了函数式编程原语，模块化的数据流中间表示和底层硬件模板，不依赖于传统的For循环驱动，保证了嵌套循环内的负载均衡，定制的存储结构可以支撑高并行度的执行。
+					 </p>
+					</div>
+				   </div>
+				  </li>
+				 </ul>
+				</div>
+			   </div>
+			 </div>
+			-->
+
+
+          <div class="row">
+            <div class="col-md-12 col-sm-12 ">
+              <div class="dashboard_graph">
+		
+                <div class="row x_title">
+                  <div class="col-md-6">
+                    <h3>高层次综合</h3>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                      <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                      <span>December 30, 2018 - February 28, 2020</span> <b class="caret"></b>
+                    </div>
+                  </div>
+                </div>
+				
+				<!--<div class="row">-->
+				<div class="col-md-6 col-sm-6">
+					<table id="datatable-checkbox" class="table table-striped table-bordered bulk_action" style="height:293px">
+						<thead style="font-size:18px">
+							<tr>
+								<th>数据集</th>
+								<th>点数</th>
+								<th>边数</th>
+							</tr>
+						</thead>
+						<tbody style="font-size:16px">
+							<tr>
+								<td>email-Eu-core</td>
+								<td>1005</td>
+								<td>25571</td>
+							</tr>
+							<tr>
+								<td>wiki-Vote</td>
+								<td>7115</td>
+								<td>103689</td>
+							</tr>
+							<tr>
+								<td>soc-Epinions1</td>
+								<td>75879</td>
+								<td>508837</td>
+							</tr>
+							<tr>
+								<td>soc-Slashdot0922</td>
+								<td>82168</td>
+								<td>948464</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="col-md-6 col-md-6 ">
+					<div class="x_panel">
+						<div class="x_title">
+							<h2 style="font-size:22px">数据集&算法</h2>
+							<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+					
+						<div class="x_content">
+							<br />
+							<form class="form-horizontal form-label-left" target="iframe_hls">
+								<div class="form-group row">
+									<label class="control-label col-md-3 col-sm-3 " style="font-size:18px">数据集</label>
+									<div class="col-md-9 col-sm-9 ">
+										<select class="select2_single form-control" tabindex="-1" id='dataset'>
+											<option value="none">请选择</option>
+											<option value="email">email-Eu-core</option>
+											<option value="wiki">wiki-Vote</option>
+											<option value="epin">soc-Epinions1</option>
+											<option value="slash">soc-Slashdot0922</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="control-label col-md-3 col-sm-3 " style="font-size:18px">算法</label>
+									<div class="col-md-9 col-sm-9 ">
+										<select class="select2_single form-control" tabindex="-1" id='algorithm'>
+											<option value="none">请选择</option>
+											<option value="bfs">bfs</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="ln_solid"></div>
+								<div class="form-group">
+									<div class="col-md-9 col-sm-9  offset-md-3">
+										<button type="reset" class="btn btn-primary" id='hls_reset2'>重置</button>
+										<button type="submit" class="btn btn-success" id='hls_run2'>运行</button>
+									</div>
+								</div>
+							</form>
+							<iframe name="iframe_hls" style="display:none;"></iframe>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+			<div class="clearfix"></div>
+			<div class="row">
+			  
+				<div class="col-md-6 col-md-6 " id="terminal">
+					<div class="x_panel">
+						<div class="x_title">
+							<h2 style="font-size:22px">控制台输出</h2>
+							<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+								<li><a class="close-link"><i class="fa fa-close"></i></a>
+								</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+					
+						<div class="x_content">
+							<div id="hls_run_ans"></div>
+
+							<div id="loading_terminal" class="l-wrapper" style="display: none;margin-top:50px;">
+								<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+									<g id="circle" class="g-circles g-circles--v1">
+										<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+										<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+										<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+										<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+										<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+										<circle id="7" cx="60" cy="110" r="10"></circle>
+										<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+										<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+										<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+										<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+										<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+										<circle id="1" cx="60" cy="10" r="10"></circle>
+									</g>
+									<use xlink:href="#circle" class="use"/>
+								</svg>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="col-md-6 col-md-6">
+					<div class= "x_panel">
+						<div class="x_title">
+							<h2 style="font-size:22px">BFS性能对比</h2>
+							<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+								<li><a class="close-link"><i class="fa fa-close"></i></a>
+								</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+
+						<div class="x_content">
+							<div id="hls_bardata"></div>
+							<div id="loading_bardata" class="l-wrapper" style="display: none;margin-top:50px;">
+								<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+									<g id="circle" class="g-circles g-circles--v1">
+										<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+										<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+										<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+										<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+										<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+										<circle id="7" cx="60" cy="110" r="10"></circle>
+										<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+										<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+										<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+										<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+										<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+										<circle id="1" cx="60" cy="10" r="10"></circle>
+									</g>
+									<use xlink:href="#circle" class="use"/>
+								</svg>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+
+
+			  </div>
+			</div>
+		  </div>
+
+		  
+		  <div class="clearfix"></div>
+		  <div class="row">
+		      <div class="col-md-12 col-sm-12 ">
+			    <div class="x_title">
+					<div class="col-md-6">
+						<h3>代码转化展示</h3>
+					</div>
+					<div class="col-md-6">
+						<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+						</ul>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+
+				<div class="x_content">
+					
+					<div class="col-md-6 col-sm-6 ">
+						<div class="x_panel">
+							<div class="x_title">
+								<div class="col-md-6">
+									<h2 style="font-size:22px">高层次代码</h2>
+								</div>
+								<div class="col-md-6">
+									<ul class="nav navbar-right panel_toolbox">
+										<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+										</li>
+										<li><a class="close-link"><i class="fa fa-close"></i></a>
+										</li>
+									</ul>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content">
+								<div class="col-md-12 col-sm-12 " >
+									<div id="orign_code" style="height: 285px;overflow-y: scroll;font-size:16px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6 ">
+						<div class="x_panel">
+							<div class="x_title">
+								<div class="col-md-6">
+									<h2 style="font-size:22px">spatial复制sram</h2>
+								</div>
+								<div class="col-md-6">
+									<ul class="nav navbar-right panel_toolbox">
+										<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+										</li>
+										<li><a class="close-link"><i class="fa fa-close"></i></a>
+										</li>
+									</ul>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content">
+								<div class="col-md-12 col-sm-12 " >
+									<div id="generate_code" style="height: 285px;overflow-y: scroll;font-size:16px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>	
+
+					
+					
+					<div class="clearfix"></div>
+					<div class="row" id="slide_photo_row">
+
+							<div class="col-md-6 col-md-6 ">
+								<div class="x_panel">
+									<div class="x_title">
+										<h2 style="font-size:22px">设计示意图</h2>
+										<ul class="nav navbar-right panel_toolbox">
+										<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+										</li>
+										<li><a class="close-link"><i class="fa fa-close"></i></a>
+										</li>
+										</ul>
+										<div class="clearfix"></div>
+									</div>
+									<div class="x_content" style="height: 650px">
+										<img id="slide_photo" src="" width="100%"/*style="width:100%;height:100%;*/">
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-6 col-sm-6 ">
+								<div class="x_panel">
+									<div class="x_title">
+										<div class="col-md-6">
+											<h2 style="font-size:22px">Verilog代码</h2>
+										</div>
+										<div class="col-md-6">
+											<ul class="nav navbar-right panel_toolbox">
+												<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+												</li>
+												<li><a class="close-link"><i class="fa fa-close"></i></a>
+												</li>
+											</ul>
+										</div>
+										<div class="clearfix"></div>
+									</div>
+									<div class="x_content">
+										<div class="col-md-12 col-sm-12 " >
+											<div id="generate_code" style="height: 285px;overflow-y: scroll;font-size:16px;"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+					</div>
+
+				</div><!--content end-->
+				</div>
+				</div>
+
+	
+
+
+            </div>
+
+          </div>
+          <br />
+
+        </div>
+        <!-- /page content -->
+
+        <!-- footer content -->
+        <!--<footer>
+          <div class="pull-right">
+            <a href="http://grid.hust.edu.cn">计算机科学与技术学院，服务计算技术与系统教育部重点实验室、集群与网格计算湖北省重点实验室</a>
+          </div>
+          <div class="clearfix"></div>
+        </footer>-->
+        <!-- /footer content -->
+      </div>
+    </div>
+
+
+	<!-- Bootstrap -->
+	<script src="{% static 'vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+	<!-- FastClick -->
+    <script src="{% static 'vendors/fastclick/lib/fastclick.js' %}"></script>
+	<!-- NProgress -->
+    <script src="{% static 'vendors/nprogress/nprogress.js' %}"></script>
+	<!-- Chart.js -->
+    <script src="{% static 'vendors/Chart.js/dist/Chart.min.js' %}"></script>
+	<!-- gauge.js -->
+    <script src="{% static 'vendors/gauge.js/dist/gauge.min.js' %}"></script>
+	<!-- bootstrap-progressbar -->
+    <script src="{% static 'vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
+	<!-- iCheck -->
+    <script src="{% static 'vendors/iCheck/icheck.min.js' %}"></script>
+	<!-- Skycons -->
+    <script src="{% static 'vendors/skycons/skycons.js' %}"></script>
+	<!-- Flot -->
+    <script src="{% static 'vendors/flot/jquery.flot.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.pie.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.time.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.stack.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.resize.js' %}"></script>
+	<!-- Flot plugins -->
+    <script src="{% static 'vendors/flot.orderbars/js/jquery.flot.orderBars.js' %}"></script>
+	<script src="{% static 'vendors/flot-spline/js/jquery.flot.spline.min.js' %}"></script>
+	<script src="{% static 'vendors/flot.curvedlines/curvedLines.js' %}"></script>
+	<!-- DateJS -->
+    <script src="{% static 'vendors/DateJS/build/date.js' %}"></script>
+	<!-- JQVMap -->
+    <script src="{% static 'vendors/jqvmap/dist/jquery.vmap.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/dist/maps/jquery.vmap.world.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/examples/js/jquery.vmap.sampledata.js' %}"></script>
+	<!-- bootstrap-daterangepicker -->
+	<script src="{% static 'vendors/moment/min/moment.min.js' %}"></script>
+	<script src="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+    <!-- Custom Theme Scripts -->
+	<script src="{% static 'build/js/custom.min.js' %}"></script>
+
+  </body>
+</html>

@@ -1,0 +1,78 @@
+<font color="#FF0000">x562 = SRAMNew(dims=[75888],evidence$1=SRAM1[Fix[TRUE,_32,_0]])</font>
+<font color="#FF0000">Name: level_0</font>
+SrcCtx: bfs_a.scala:24:30
+Type: SRAM1[Fix[TRUE,_32,_0]]
+Aliases: 0018: x27
+ScopeCtrl: Scope(s=Some(x152), stage=0, block=0)
+Writers: [x1428, x721, x1797, x700, x1305, x1346, x1633, x1551, x1223, x1510, x1838, x2057, x1387, x1674, x1756, x1592, x1469, x1264, x1715]
+ShallowAliases: [x562]
+AccumulatorType: Fold()
+Duplicates
+banking
+Dims {0}: Cyclic: N=16, B=1, alpha=<1>, P=<16>
+depth: 1
+padding: [0]
+accType: Fold()
+ParentCtrl: Ctrl(s=Some(x152), stage=-1)
+ReadUses: []
+BroadcastAddress: false
+Consumers: [x1113, x1428, x721, x1797, x700, x1305, x1346, x1633, x1551, x1223, x1510, x1838, x2057, x1387, x152, x1674, x1756, x1592, x1469, x1264, x1715]
+DeepAliases: []
+Padding: [0]
+DefiningBlk: Blk(s=Some(x152), block=0)
+Readers: [x1113]
+Effects: Mutable
+FullDelay: 0.0
+<font color="#FF0000">x563 = SRAMNew(dims=[75888],evidence$1=SRAM1[Fix[TRUE,_32,_0]])</font>
+<font color="#FF0000">Name: level_1</font>
+SrcCtx: bfs_a.scala:24:30
+Type: SRAM1[Fix[TRUE,_32,_0]]
+Aliases: 0018: x27
+ScopeCtrl: Scope(s=Some(x152), stage=0, block=0)
+Writers: [x725, x1760, x1309, x1555, x1596, x1801, x1268, x704, x1473, x1350, x1227, x1842, x1678, x2061, x1391, x1637, x1719, x1432, x1514]
+ShallowAliases: [x563]
+AccumulatorType: Fold()
+Duplicates
+banking
+Dims {0}: Cyclic: N=16, B=1, alpha=<1>, P=<16>
+depth: 1
+padding: [0]
+accType: Fold()
+ParentCtrl: Ctrl(s=Some(x152), stage=-1)
+ReadUses: []
+BroadcastAddress: false
+Consumers: [x725, x1760, x1137, x1309, x1555, x1596, x1801, x1268, x704, x1473, x1350, x1227, x152, x1842, x1678, x2061, x1391, x1637, x1719, x1432, x1514]
+DeepAliases: []
+Padding: [0]
+DefiningBlk: Blk(s=Some(x152), block=0)
+Readers: [x1137]
+Effects: Mutable
+FullDelay: 0.0
+
+...
+
+<font color="#FF0000">x578 = SRAMNew(dims=[75888],evidence$1=SRAM1[Fix[TRUE,_32,_0]])</font>
+<font color="#FF0000">Name: level_16</font>
+SrcCtx: bfs_a.scala:24:30
+Type: SRAM1[Fix[TRUE,_32,_0]]
+Aliases: 0018: x27
+ScopeCtrl: Scope(s=Some(x152), stage=0, block=0)
+Writers: [x1589, x1261, x1712, x1343, x1753, x1466, x1835, x1630, x718, x1548, x1220, x2054, x1425, x1384, x1507, x1794, x1671, x1302, x697]
+ShallowAliases: [x578]
+AccumulatorType: Fold()
+Duplicates
+banking
+Dims {0}: Cyclic: N=16, B=1, alpha=<1>, P=<16>
+depth: 1
+padding: [0]
+accType: Fold()
+ParentCtrl: Ctrl(s=Some(x152), stage=-1)
+ReadUses: []
+BroadcastAddress: false
+Consumers: [x1589, x1261, x1712, x1343, x1753, x1466, x1835, x1630, x152, x718, x1548, x1220, x2054, x1425, x1384, x1507, x1794, x1671, x1095, x1302, x697]
+DeepAliases: []
+Padding: [0]
+DefiningBlk: Blk(s=Some(x152), block=0)
+Readers: [x1095]
+Effects: Mutable
+FullDelay: 0.0

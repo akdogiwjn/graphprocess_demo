@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load staticfiles %}
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="{% static 'images/hust.jfif' %}" type="image/ico" />
+
+	<title>图计算演示系统</title>
+
+    <!-- Bootstrap -->
+	<link href="{% static 'vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+	<!-- NProgress -->
+	<link href="{% static 'vendors/nprogress/nprogress.css' %}" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="{% static 'vendors/iCheck/skins/flat/green.css' %}" rel="stylesheet">
+	<!-- bootstrap-progressbar -->
+    <link href="{% static 'vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+	<!-- JQVMap -->
+    <link href="{% static 'vendors/jqvmap/dist/jqvmap.min.css' %}" rel="stylesheet"/>
+	<!-- bootstrap-daterangepicker -->
+	<link href="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.css' %}" rel="stylesheet">
+    <!-- Custom Theme Style -->
+	<link href="{% static 'build/css/custom.css' %}" rel="stylesheet">
+
+	<link href="{% static 'loading_css/loading2.css' %}" rel="stylesheet">
+	
+	<script src="{% static 'jquery/jquery-3.1.1.min.js' %} "></script>
+	
+	<script src="{% static 'power/layerslider/js/jquery.js' %}" type="text/javascript"></script>
+	<!--<script src="{% static 'power/layerslider/js/greensock.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/layerslider/js/layerslider.transitions.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/layerslider/js/layerslider.kreaturamedia.jquery.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/js/bootstrap.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'power/js/jquery.bxslider.js' %}"></script>-->
+	<script type="text/javascript" src="{% static 'power/echarts.min.js' %}"></script>
+	
+	<script>
+		
+		$.extend({
+			readcode: function(url, f) {
+				$.get(url, function(record) {
+					f.call(this, record);
+				});
+			}
+		});
+
+
+		$(document).ready(function(){
+			//$("#pingan_reset").on("click", function () {
+				//$("#pingan_run_ans").html("");
+				//$('#pingan_graphMap').html("");
+				//$('#pingan_bardata').html("");
+				//$('#pingan_columnBarChart').html("");
+				//var dom = document.getElementById("pingan_graphMap");
+				//var chart = echarts.init(dom);
+				//chart.clear();
+			//});
+		});
+		$(document).ready(function(){
+			$("#span_refresh").bind("click", function () {
+				//console.log('reset Accelerator');
+				document.getElementById("loading_terminal").style.display="";
+				$("#pingan_run_ans").html("Accelerator is resetting...");
+				$.ajax({
+					url:"/reset_run/",
+					type:"GET",
+					data:{"info":'reset Accelerator'},
+					success:function (data) {
+						$("#pingan_run_ans").html("");     
+						for(var i = 0; i<= data.length-1; i++){
+							$("#pingan_run_ans").append(data[i] + '</br>')
+						}
+						$("#pingan_run_ans").append('Accelerator reset complete' + '</br>')
+						document.getElementById("loading_terminal").style.display="none";
+					}
+				});
+			});
+
+			$("#code_show").on("click", function () {
+				$.readcode("{% static 'code_show/pingan.cpp' %}?ti=" + new Date().getTime(), function(record) {
+					record=record;
+					$("#pingan_code").val(record);
+					
+					record = record.replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp');
+					record = record.replace(/\n/g, '</br>');
+					
+					$("#pingan_code").html("");
+					$("#pingan_code").append(record);
+					var str=document.getElementById("pingan_code").innerHTML;
+					str=str.replace(/InitializeGraph/,"<font color=\"red\">InitializeGraph</font>");
+					str=str.replace(/VertexFilter/,"<font color=\"red\">VertexFilter</font>");
+					str=str.replace(/ProcessEdge/,"<font color=\"red\">ProcessEdge</font>");
+					str=str.replace(/AccumulateEdge/,"<font color=\"red\">AccumulateEdge</font>");
+					str=str.replace(/AccumulateVertex/,"<font color=\"red\">AccumulateVertex</font>");
+					str=str.replace(/print/,"<font color=\"red\">print</font>");
+					str=str.replace(/UserAlgorithm/g,"<font color=\"red\">UserAlgorithm</font>");
+					str=str.replace(/ExecuteAlgorithm/g,"<b>ExecuteAlgorithm</b>");
+					str=str.replace(/PrintPerformance/g,"<b>PrintPerformance</b>");
+					document.getElementById("pingan_code").innerHTML=str;
+				});
+			});
+
+
+			$("#pingan_reset").on("click", function () {
+				var chart = echarts.init(document.getElementById("pingan_graphMap"));
+				chart.dispose();
+				chart = echarts.init(document.getElementById("pingan_columnBarChart"));
+				chart.dispose();
+				chart = echarts.init(document.getElementById("pingan_bardata"));
+				chart.dispose();
+				$("#pingan_run_ans").html("");
+				//$("#pingan_code").val('');
+				$("#pingan_code").html("");
+
+				//var dom = document.getElementById("pingan_graphMap");
+				//var pingan_myChart = echarts.init(dom);
+				//pingan_getNodesDataSource(pingan_myChart,0);
+			});
+
+			$("#pingan_run").on("click", function () {
+				var chart = echarts.init(document.getElementById("pingan_graphMap"));
+				chart.dispose();
+				chart = echarts.init(document.getElementById("pingan_columnBarChart"));
+				chart.dispose();
+				chart = echarts.init(document.getElementById("pingan_bardata"));
+				chart.dispose();
+
+				document.getElementById("loading_terminal").style.display="";
+				document.getElementById("loading_bardata").style.display="";
+				document.getElementById("loading_columnBarChart").style.display="";
+
+				$.ajax({
+					url:"/financial_run/",
+					type:"GET",
+					data:{"dataset":$("#dataset").val(),"algorithm":$("#algorithm").val()},
+					success:function (data) {
+						
+						$("#pingan_run_ans").html("");
+
+						for(var i = 0; i<= data.length-1; i++){
+							if(JSON.stringify(data[i]).substr(2,10)=='XILINX_XRT'
+								||JSON.stringify(data[i]).substr(2,4)=='PATH'
+								||JSON.stringify(data[i]).substr(2,15)=='LD_LIBRARY_PATH'
+								||JSON.stringify(data[i]).substr(2,10)=='PYTHONPATH'){
+								continue;
+							}
+							$("#pingan_run_ans").append(data[i] + '</br>')
+						}
+
+						document.getElementById("loading_terminal").style.display="none";
+						document.getElementById("loading_bardata").style.display="none";
+						document.getElementById("loading_columnBarChart").style.display="none";
+					}
+				});
+
+				$.csv("{% static 'data/financial/time.csv' %}?ti=" + new Date().getTime(), function(rows) {
+					var _points = rows[0];
+					var initlen = Object.keys(_points).length;
+						
+					var dom = document.getElementById("pingan_graphMap");
+					var pingan_myChart = echarts.init(dom);
+					pingan_getNodesDataSource(pingan_myChart,0)
+					setTimeout(function() {;
+						//var dom = document.getElementById("pingan_graphMap");
+						//var pingan_myChart = echarts.init(dom);
+						//pingan_getNodesDataSource(pingan_myChart,0);
+						pingan_refresh2(1,pingan_myChart,initlen,false);
+					},500);
+				});
+				//pingan_refresh2();
+				console.log('222');
+				
+			});
+		});
+		
+		function pingan_refresh2(num,map_chart,initlen,beginflag){
+			console.log('num='+num);
+			$.csv("{% static 'data/financial/time.csv' %}?ti=" + new Date().getTime(), function(rows) {
+					var _points = rows[0];
+					var len = Object.keys(_points).length;
+					if(_points[0]===''){
+						len=0;
+					}
+					console.log(len);
+
+
+
+					if(initlen===len&&beginflag===false){
+						pingan_refresh(map_chart,0);
+						setTimeout(function() {
+							pingan_refresh2(num+1,map_chart,initlen,false);
+						},1000);
+					}
+					else if(len===49){
+						console.log("finished");
+						pingan_refresh(map_chart,len);
+					}
+					else{
+						pingan_refresh(map_chart,len);
+						setTimeout(function() {
+							pingan_refresh2(num+1,map_chart,initlen,true);
+						},1000);
+					}
+			});
+		}
+		function pingan_refresh(map_chart,len){
+			$.ajax({
+				url:"/financial_getfile/",
+				type:"GET",
+				data:{"dataset":$("#dataset").val(),"algorithm":$("#algorithm").val()},
+				success:function (data) {
+					var dom1 = document.getElementById("pingan_columnBarChart");
+					var pingan_barChart = echarts.init(dom1);
+					if(len){
+						pingan_getBarChart(pingan_barChart,0);
+					}
+					else{
+						pingan_getBarChart(pingan_barChart,1);
+					}
+
+					
+					pingan_getFlagPoints(map_chart,len);
+
+					if(len){
+						$.csv("{% static 'data/financial/time.csv' %}?ti=" + new Date().getTime(), function(rows) {
+							var _points = rows[0];
+							var newlen = Object.keys(_points).length;
+							if(_points[0]===''){
+								newlen=0;
+							}
+
+							pinganColumns.acc_data=[];
+							var newtotal_time=0;
+							for(var i=0;i<newlen;i++){
+								pinganColumns.acc_data.push(_points[i]);
+								newtotal_time+=parseFloat(_points[i].replace(/\s+/g,""));
+							}
+							var barChart = echarts.init(document.getElementById('pingan_bardata'));
+							draw_pr(pinganColumns,barChart,newtotal_time.toFixed(2));
+						});
+					}
+					else{
+						pinganColumns.acc_data=[];
+						var barChart = echarts.init(document.getElementById('pingan_bardata'));
+						//draw_pr(pinganColumns,0);
+					}
+
+					if(len){
+						document.getElementById("loading_bardata").style.display="none";
+						document.getElementById("loading_columnBarChart").style.display="none";
+					}
+
+				}       
+			});
+		}
+
+	</script>
+
+	
+	<script>
+	pinganColumns = {};
+	pinganColumns['x_data'] = [];
+	pinganColumns['acc_data'] = [];
+	function draw_pr(prColumns,myChart,total_time){
+
+		//var myChart = echarts.init(document.getElementById(pr_bardata));
+		var colors = ['#4A4AFF','#FF0000'];
+
+		var _seriesData =[];
+		//var _legendData =[];
+		var _x_data=[];
+		for(var i=0;i<prColumns.acc_data.length;i++){
+			_seriesData.push(
+				{
+					name:'科室'+(i+1),
+					type:'bar',
+					yAxisIndex: 1,
+					data: [prColumns.acc_data[i]]
+				}
+			);
+			//_legendData.push('科室' + (i + 1));
+		}
+		_x_data.push('各科室时间');
+
+
+
+
+		option = {
+			title: {
+				x: "center",
+				text: '完成科室数:'+prColumns.acc_data.length+'  总时间:'+total_time+'s',
+				textStyle: {//主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+					fontFamily: 'Arial, Verdana, sans...',
+					fontSize: 12,
+					fontStyle: 'normal',
+					fontWeight: 'normal',
+				}
+			},
+		    //color: colors,
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross'
+				},
+				formatter:function(datas){
+					var res='<PRE style=\"color:white;font-size:15px;font-family: Helvetica Neue, Roboto, Arial, Droid Sans, sans-serif;\">'+'';
+						for(var i = 0, length = datas.length; i < 20; i++) {
+							for(var j=i;j<length;j+=20){
+								if(j+20<length){
+									res += datas[j].marker+datas[j].seriesName + ':&nbsp' + datas[j].value+'s';
+									var str=''+datas[j].seriesName;
+									var num_space=8-str.length;
+									if(j<9){num_space++;}
+									for(k=0;k<num_space;k++){res += '&nbsp';}
+									res += '&#9';
+								}
+								else{
+									res += datas[j].marker+datas[j].seriesName + ':&nbsp' + datas[j].value+'s' + '<br/>';
+								}
+							}
+						}
+					res += '</PRE>';
+					return res;
+				},
+			},
+			grid: {
+				right: '5%'
+			},
+			toolbox: {
+				feature: {
+					dataView: {show: true, readOnly: true},
+					restore: {show: false},
+					saveAsImage: {show: true}
+				}
+			},
+			legend: {
+				data:['加速器']
+			},
+			xAxis: [
+				{
+					type: 'category',
+					axisTick: {
+						aignWithLabel: true
+					},
+					data: _x_data//prColumns.x_data
+				}
+			],
+			yAxis: [
+				{
+					type: 'value',
+					name: '时间(s)',
+				    min: 0.0,
+					max: 4,
+					position: 'left',
+						axisLine: {
+							lineStyle: {
+								color: colors[0]
+							}
+						},
+						axisLabel: {
+							formatter: '{value} '
+						}
+					},
+					{
+						type: 'value',
+						name: '',
+						min: 0.0,
+						max: 4,
+						position: 'right',
+						axisLine: {
+							lineStyle: {
+								color: colors[1]
+							}
+						},
+						axisLabel: {
+							formatter: '{value} '
+						}
+					}
+				],
+				series: /*[
+					{
+						name:'单科室时间',
+						type:'bar',
+						yAxisIndex: 1,
+						data: prColumns.acc_data,
+					},
+				]*/_seriesData
+			};
+			
+			myChart.setOption(option);
+		}
+
+	</script>
+	
+
+
+	
+	<script type="text/javascript">
+	
+		$.extend({
+			csv: function(url, f) {
+				$.get(url, function(record) {
+					//按回车拆分
+					record = record.split(/\n/);
+					//第一行标题
+					var title = record[0].split(",");
+					//删除第一行
+					//record.shift();
+					var data = [];
+					for (var i = 0; i < record.length; i++) {
+						var t = record[i].split(",");
+						for (var y = 0; y < t.length; y++) {
+							if (!data[i]) data[i] = {};
+							data[i][y] = t[y];//console.log(i+','+y+','+data[i][y]);
+						}
+					}
+					f.call(this, data);
+					data = null;
+				});
+			}
+		});
+		
+		function pingan_getNodesDataSource(my_chart,seed_show) {
+			$.csv("{% static 'data/financial/suspect.csv' %}?ti=" + new Date().getTime(), function(_suspect_data) {
+			$.csv("{% static 'data/financial/location.csv' %}?ti=" + new Date().getTime(), function(_locate_data) {
+			$.csv("{% static 'data/financial/node_graph_filter.csv' %}?ti=" + new Date().getTime(), function(rows) {
+				// 构建数据点关系
+				var _data = [],
+						_node = [];
+				(rows || []).forEach(function(node, index) {
+					if (index < 3000 && node[0]) {
+						var _source = node[0].split(' ')[0].trim(),
+								_target = node[0].split(' ')[1].trim();
+
+						_data.push({
+							source: _source,
+							target: _target
+						});
+
+						_node.push([_source, _target]);
+
+					}
+				});
+
+				pingan_createGraphChart(my_chart,_data,seed_show,_locate_data,_suspect_data);
+				//console.log(JSON.stringify(_node));
+
+				// 启用标红点
+				if(seed_show){
+					setTimeout(function() {
+						pingan_getFlagPoints(my_chart,seed_show);
+					}, 1000);
+				}
+				//setTimeout(function() {
+				//	pingan_getFlagPoints(my_chart,40);
+				//}, 1000);
+			});
+			});
+			});
+		}
+		
+		function pingan_createGraphChart(my_chart,_data,seed_show,_locate_data,_suspect_data) {
+			var seed_num={};
+			var seed_id={};
+			for(var i=0;i<49;i++){
+				if(i===1||i===5||i===6||i===9||i===11||i===19||i===23||i===30){
+					seed_num[i]=3;
+				}
+				else{
+					seed_num[i]=2;
+				}
+			}
+			var rand_seed_id=[];
+			var _points = _suspect_data[0],
+				_len = Object.keys(_points).length,
+				seed_id=[];
+			for(var i=0,count=0;i<49;i++){
+				for(var j=0;j<seed_num[i];j++){
+					seed_id[count+j]=i+1;
+				}
+				count+=seed_num[i];
+			}
+			for(var i=0;i<800;i++){
+				var node_id=i;
+				rand_seed_id[i]=(((node_id+123)*(node_id+234)*345+(node_id+456)*(node_id+567)*678+(node_id+789)*(node_id+890)*901)%49)+1;
+			}
+			for (var i = 0; i < _len; i++){
+				rand_seed_id[i]=seed_id[i];
+			}
+
+			var categories = [];
+			for(var i=0;i<49;i++){
+				categories[i] = {
+					name: '科室'+(i+1)
+				};
+			}
+
+			//将json对象数据转换为图表所需要的数据
+			var seriesData = [],
+					key = [],
+					links = _data;
+
+			links.forEach(function(d) {
+				if (key.indexOf(d.source) == -1 &&parseInt(d.source)<800) {
+					seriesData.push({
+						name: d.source,
+						value: d.source,
+						x: parseFloat(_locate_data[parseInt(d.source)][0]),
+						y: _locate_data[parseInt(d.source)][1],
+						category: (parseInt(rand_seed_id[parseInt(d.source)])),
+						seed_id: rand_seed_id[parseInt(d.source)],
+
+						label: {
+							normal: {
+								show: false,
+								textStyle: {
+									fontSize: 12
+								},
+							}
+						},
+
+						itemStyle: {
+							normal: {
+								color: "#696969"
+							}
+						}
+					});
+					key.push(d.source);
+				}
+				if (key.indexOf(d.target) == -1 &&parseInt(d.target)<800) {
+					seriesData.push({
+						name: d.target,
+						value: d.target,
+						x: parseFloat(_locate_data[parseInt(d.target)][0]),
+						y: _locate_data[parseInt(d.target)][1],
+						category: (parseInt(rand_seed_id[parseInt(d.target)])),
+						seed_id: rand_seed_id[parseInt(d.target)],
+
+						label: {
+							normal: {
+								show: false,
+								textStyle: {
+									fontSize: 12
+								},
+							}
+						},
+
+						itemStyle: {
+							normal: {
+								color: "#696969"
+							}
+						}
+					});
+					key.push(d.target);
+				}
+				d.weight = 1;
+			});
+
+			var option = {
+				title: {
+					x: "center",
+					text: '' //图表标题
+				},
+				/*legend: [{
+					// selectedMode: 'single',
+					data: categories.map(function (a) {
+						return a.name;
+					})
+				}],*/
+				//tooltip: {},
+				tooltip: {
+					trigger: 'item',
+					formatter: function (params) {
+						if (params.data.source){
+							return '源点:'+params.data.source+' 目标点:'+params.data.target ;
+						}
+						else{
+							//if(params.data.seed_id===0){
+							//	var node_id=parseInt(params.data.name);
+							//	var rand_seed_id=(((node_id+123)*(node_id+234)*345+(node_id+456)*(node_id+567)*678+(node_id+789)*(node_id+890)*901)%49)+1;
+							//	return '节点: '+ params.data.name  +'\n科室: '+rand_seed_id;
+							//}
+							//else{
+								return '节点: '+ params.data.name  +'\n科室: '+params.data.seed_id;
+							//}
+						}
+					}
+				},
+
+				animationDurationUpdate: 0,
+				// animationEasingUpdate: 'quinticInOut',
+				series: [{
+					type: 'graph',
+					// layout: 'force',
+					symbolSize: 10, //节点大小
+					//focusNodeAdjacency: true,
+					roam: true,
+					/*label: {
+						normal: {
+							show: false,
+							textStyle: {
+								fontSize: 12
+							},
+						}
+					},*/
+					force: {
+						repulsion: 40,
+						gravity: 0.1,
+						edgeLength: 30,
+						layoutAnimation:false
+					},
+					edgeSymbolSize: [4, 20],
+					edgeLabel: {
+						normal: {
+							show: false,
+							textStyle: {
+								fontSize: 10
+							}
+						}
+					},
+					data: seriesData,
+					links: links,
+					//categories: categories,
+					lineStyle: {
+						normal: {
+							color: "#797D7F",
+							opacity: 0.1,
+							width: 1
+						}
+					}
+				}]
+			};
+
+			my_chart.setOption(option);
+
+		}
+	
+		function pingan_getFlagPoints(my_chart,seed_show) {
+			var _inThis = this;
+
+			var seed_num={};
+			var seed_id={};
+			for(var i=0;i<49;i++){
+				if(i===1||i===5||i===6||i===9||i===11||i===19||i===23||i===30){
+					seed_num[i]=3;
+				}
+				else{
+					seed_num[i]=2;
+				}
+			}
+			var count=0;
+			for(var i=0;i<seed_show;i++){
+				for(var j=0;j<seed_num[i];j++){
+					seed_id[count+j]=i+1;
+				}
+				count+=seed_num[i];
+			}
+
+			$.csv("{% static 'data/financial/suspect.csv' %}?ti=" + new Date().getTime(), function(rows) {
+				if (rows) {
+					var _points = rows[0],
+							_len = Object.keys(_points).length,
+							_seriesData = my_chart.getOption().series[0].data;
+
+					var _hasPoint = false;
+					for (var i = 0; i < _len&&i<count; i++) {
+						for (var j = 0; j < _seriesData.length; j++) {
+							if (_points[i].trim() == _seriesData[j].value) {
+								// 找到匹配的数据点 设置红颜色
+								_seriesData[j].itemStyle.color = "DARKRED";
+								_hasPoint = true;
+
+								//console.log( _seriesData[j].label);
+								
+								_seriesData[j].label.show='true';
+								//_seriesData[j].seed_id=seed_id[i];
+								//console.log( _seriesData[j].label.show);
+							}
+						}
+					}
+
+					// 更新数据点
+					if (_hasPoint) {
+						var _newOption = my_chart.getOption();
+						_newOption.series[0].data = _seriesData;
+						my_chart.setOption(_newOption, true);
+					}
+				}
+
+			//	setTimeout(function() {
+			//		getFlagPoints(my_chart);
+			//	}, 30000);
+			});
+		}
+	
+		function pingan_getBarChart(my_chart,flag) {
+			var locate;
+			if(flag===1){
+				locate="{% static 'data/financial/empty.csv' %}?ti=" + new Date().getTime();
+			}
+			else{
+				locate="{% static 'data/financial/time.csv' %}?ti=" + new Date().getTime();
+			}
+			$.csv(locate, function(rows) {
+				if (rows) {
+					var _points = rows[0];
+					pingan_createBarChart(my_chart,_points);
+				}
+			});
+		}
+		
+		function pingan_createBarChart(my_chart,_points) {
+			var legendData = [],
+					seriesData = [],
+					len = Object.keys(_points).length;
+			if(_points[0]===''){
+				len=0;
+			}
+
+			for (var i = 0; i < len; i++) {
+				// 累加图例
+				var seed_name;
+				if((len%11)===0&&i<parseInt(len/11)*11-11){
+					seed_name=''+i;
+				}
+				else if((len%11)>0&&i<parseInt(len/11)*11){
+					seed_name=''+i;
+				}
+				else{
+					seed_name='科室'+(i+1);
+				}
+				legendData.push(seed_name);
+
+				var pos='top';
+				if(i%2==1) pos='bottom';
+
+				// 累加图表序列
+				seriesData.push({
+					name: '科室'+(i+1),
+					type: 'bar',
+					stack: '总量',
+					barWidth:15,
+					label: {
+						normal: {
+							show: true,
+							position: pos
+						}
+					},
+					data: [_points[i]*1]
+				});
+			}
+
+			// console.log(legendData,seriesData);
+
+			var option = {
+				tooltip: {
+					show:true,
+					trigger: 'axis',
+					axisPointer: { // 坐标轴指示器，坐标轴触发有效
+						type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+					},
+					formatter:function(datas){
+						var res='<PRE style=\"color:white;font-size:15px;font-family: Helvetica Neue, Roboto, Arial, Droid Sans, sans-serif;\">'+'';
+						for(var i = 0, length = datas.length; i < 20; i++) {
+							for(var j=i;j<length;j+=20){
+								if(j+20<length){
+									res += datas[j].marker+datas[j].seriesName + ':&nbsp' + datas[j].value+'s';
+									var str=''+datas[j].seriesName;
+									var num_space=8-str.length;
+									if(j<9){num_space++;}
+									for(k=0;k<num_space;k++){res += '&nbsp';}
+									res += '&#9';
+								}
+								else{
+									res += datas[j].marker+datas[j].seriesName + ':&nbsp' + datas[j].value+'s' + '<br/>';
+								}
+							}
+						}
+						res += '</PRE>';
+						return res;
+					},
+				},
+				legend: {
+					data: legendData
+				},
+				grid: {
+					left: '3%',
+					right: '4%',
+					bottom: '3%',
+					containLabel: true
+				},
+				xAxis: {
+					type: 'value',
+					name:'s'
+				},
+				yAxis: {
+					type: 'category',
+					data: ['时间']
+				},
+				series: seriesData
+			};
+
+			my_chart.setOption(option);
+		}
+	
+	</script>
+
+
+	
+
+	
+  </head>
+
+  <style type="text/css">
+  #terminal {
+  /* 父容器设置宽度, 并超出部分不显示 */
+  /* width: 650px; */
+  height: 280px; 
+  overflow: hidden;
+  }
+  #terminal > div {
+  /* 子容器比父容器的宽度多 17 px, 经测正好是滚动条的默认宽度 */
+  /* width: 667px; */
+  height: 280px; 
+  line-height: 20px;
+  text-align: left;
+  overflow-y: scroll;
+  word-break:break-all;
+  }
+
+  #pingan_graphMap {
+  width: 800px;
+  height: 400px;
+  margin: 0 auto;
+  }
+
+  #pingan_columnBarChart{
+  width: 100%;
+  margin: 0 auto;
+  height: 100px;
+  margin-top: 15px;
+  }
+  #pingan_bardata{
+  margin-left: 0px;
+  border: 2px solid #457;
+  float: left;
+  clear: both;
+  width: 100%;
+  height: 230px;
+  border: rgb(223, 13, 170);
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-bottom: -40px;
+  }
+  #loading_div{
+	margin-left: 0px;
+	border: 2px solid #457;
+	float: left;
+	clear: both;
+	width: 15%;
+	height: 30px;
+	border: rgb(223, 13, 170);
+	margin-top: 160px;
+	margin-left: 0px;
+	margin-bottom: -40px;
+}
+
+  </style>
+
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view" style="height:1300px">
+
+            <div class="clearfix"></div>
+
+            <!-- menu profile quick info -->
+            <div class="profile clearfix">
+              <div class="profile_pic" style="margin-top:10px">
+				<img src="{% static 'images/logo.jpg' %}" alt="..." class="img-circle profile_img" style="padding: 0px 0px 0px 0px">
+			  </div>
+              <div class="profile_info" style="margin-left:-10px;width:150px;">
+                <span>国家重点研发计划项目</span>
+                <h2>面向图计算的通用计算机技术与系统 </br> (2018YFB1003500)</h2>
+              </div>
+            </div>
+            <!-- /menu profile quick info -->
+
+            <br />
+
+            <!-- sidebar menu -->
+            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+              <div class="menu_section">
+                <h2 style="margin-left:10px"> <font size="5" color='#BBFFFF'> 演示内容 </font></h2>
+                <ul class="nav side-menu">
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 图计算加速器 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'index' %}"> <font size="3"> 图计算加速器 </font> </a></li>
+                    </ul>
+                  </li>
+                  <li><a><i class="fa fa-home"></i> <font size="4"> 单机图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+						<li><a href="{% url 'hls' %}"> <font size="3"> 高层次综合系统 </font> </a></li>
+						<li><a href="{% url 'compare' %}"> <font size="3"> 图数据库系统 </font> </a></li>
+						<li><a href="{% url 'graphstream' %}"> <font size="3"> 图流分析 </font> </a></li>
+					</ul>
+				  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 典型应用验证 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<li><a href="{% url 'power' %}"> <font size="3"> 电力图分析 </font> </a></li>
+						<li><a href="{% url 'financial' %}"> <font size="3"> 金融·医保反欺诈 </font> </a></li>
+					</ul>
+                  </li>
+				  <li><a><i class="fa fa-home"></i> <font size="4"> 分布式图计算系统 </font> <span class="fa fa-chevron-down"></span></a>
+					<ul class="nav child_menu">
+						<!--<li><a href="{% url 'rdma' %}"> <font size="3"> RDMA性能测试 </font> </a></li>-->
+						<li><a href="{% url 'distribute' %}"> <font size="3"> 单机多卡性能测试 </font></a></li>
+					</ul>
+				  </li>
+                </ul>
+              </div>
+			</div>
+            <!-- /sidebar menu -->
+
+            <!-- /menu footer buttons -->
+            <div class="sidebar-footer hidden-small">
+              <a data-toggle="tooltip" data-placement="top" title="Settings">
+                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+              </a>
+              <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+              </a>
+              <!--<a data-toggle="tooltip" data-placement="top" title="Lock">
+                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+              </a>-->
+			  <a data-toggle="tooltip" data-placement="top" title="Reset Accelerator">
+				<span id="span_refresh" class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+			  </a>
+              <a data-toggle="tooltip" data-placement="top" title="Logout" >
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+            <!-- /menu footer buttons -->
+          </div>
+        </div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+          </div>
+        </div>
+        <!-- /top navigation -->
+
+        <!-- page content -->
+          <div class="right_col" role="main">
+		  <!-- top tiles -->
+		  <div class="row">
+			 <div class="tile_count">
+			 <div class="col">
+				<span class="count_top"><i class="fa fa-user"></i> <font size='4'>考核指标</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:16px">针对平安科技医疗保险环境，根据医保数据特征，模拟城市的典型医保数据图，基于医保数据图，对高频数据进行反欺诈分析与检测。</br></li>
+				</ul>
+			 </div>
+			 <div class="col">
+			    <span class="count_top"><i class="fa fa-user"></i> <font size='4'>评测方法</font></span>
+			    <ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:16px">基于平安数据和需求开展测试。(根据平安提供的数据进行构图，利用图算法进行欺诈行为的分析与检测)</br></li>
+				</ul>
+			 </div>
+			 <div class="col">
+			    <span class="count_top"><i class="fa fa-user"></i> <font size='4'>数据集来源</font></span>
+				<ul style="margin-left:-15px;">
+					<li{st-style: none} style="font-size:16px">由平安科技提供的脱密数据集：包含节点数50,113（来自<font color='#FF0000'>49个科室</font>的医生或患者），边数34,928,779。</br></li>
+				</ul>
+			 </div>
+			</div>
+			</div>
+		  <!-- /top tiles -->
+
+		  <!-- project introduction -->
+		  <!--<div class="row">
+			<div class="col-md-12 col-sm-12 ">
+			  <div class="x_panel">
+			   <div class="x_title">
+			    <h2>金融医保反欺诈图应用简介</h2>
+				 <ul class="nav navbar-right panel_toolbox">
+				  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+				  </li>
+				  <li><a class="close-link"><i class="fa fa-close"></i></a>
+				  </li>
+				</ul>
+				<div class="clearfix"></div>
+			   </div>
+			   <div class="x_content">
+			    <div class="dashboard-widget-content">
+
+				 <ul class="list-unstyled timeline widget">
+				  <li>
+				   <div class="block">
+				    <div class="block_content">
+					 <h2 class="title">
+					  <a>背景</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;"> 金融医保领域，欺诈是最主要的风险之一。由于欺诈行为的不可预测和行为模糊性，人工审查和传统算法很难达到理想的反欺诈效果。
+					 同时，金融医保领域中患者、医生、就诊情况、用药清单等信息具有较强的结构性，适合利用图算法进行欺诈行为的分析与检测。
+					 </p>
+					 <h2 class="title">
+					  <a>方案介绍</a>
+					 </h2>
+					 <p class="excerpt" style="text-indent:2em;"> 由于在医保反欺诈问题中，患者的群体是主要群体，并且数量远远大于医生群体，所以从患者的角度出发，
+					 可以覆盖更广泛的数据和场景。基于上述常规性假设要求，方案主要包括如下两个步骤，先基于患者角度构图，在此结果上从医生角度构图。
+					 </p>
+					</div>
+				   </div>
+				  </li>
+				 </ul>
+				</div>
+			   </div>
+			 </div>
+			-->
+
+
+          <div class="row">
+            <div class="col-md-12 col-sm-12 ">
+              <div class="dashboard_graph">
+
+                <div class="row x_title">
+                  <div class="col-md-6">
+                    <h3>反欺诈计算</h3>
+                  </div>
+                  <div class="col-md-6">
+                    <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                      <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                      <span>December 30, 2018 - February 28, 2020</span> <b class="caret"></b>
+                    </div>
+                  </div>
+                </div>
+
+				<!-- run_info_terminal -->
+				
+					
+				<!-- run -->
+				<div class="col-md-4 col-md-4 ">
+						<div class="x_panel">
+							<div class="x_title">
+								<h2>数据集&算法</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content">
+								<br />
+								<form class="form-horizontal form-label-left" target="iframe_acc">
+									<!--iframe name="iframe_acc" style="display:none;"></iframe-->
+									<div class="form-group row">
+										<label class="control-label col-md-3 col-sm-3 ">数据集</label>
+										<div class="col-md-9 col-sm-9 ">
+											<select class="select2_single form-control" tabindex="-1" id='dataset'>
+												<option value="pingan">城市金融医保大图数据</option>
+											</select>
+										</div>
+									</div>
+									
+									<div class="form-group row">
+										<label class="control-label col-md-3 col-sm-3 ">算法</label>
+										<div class="col-md-9 col-sm-9 ">
+											<select class="select2_single form-control" tabindex="-1" id='algorithm'>
+												<option value="per_pagerank">反欺诈计算</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="ln_solid"></div>
+									<div class="form-group">
+										<div class="col-md-9 col-sm-9  offset-md-3">
+											<button type="reset" class="btn btn-primary" id='pingan_reset'>重置</button>
+											<button type="submit" class="btn btn-success" id='pingan_run'>运行</button>
+											<button type="submit" class="btn btn-success" id='code_show'>代码</button>
+										</div>
+									</div>
+								</form>
+								
+								<iframe name="iframe_acc" style="display:none;"></iframe>
+
+							</div>
+						</div>
+					</div>
+
+				<div class="col-md-4 col-md-4">
+					<div class= "x_panel">
+						<div class="x_title">
+							<h2>性能对比</h2>
+							<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+								<li><a class="close-link"><i class="fa fa-close"></i></a>
+								</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+
+						<div class="x_content">
+							<div id="pingan_bardata"></div>
+
+							<div id="loading_bardata" class="l-wrapper" style="display: none;margin-top:50px;">
+								<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+									<g id="circle" class="g-circles g-circles--v1">
+										<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+										<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+										<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+										<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+										<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+										<circle id="7" cx="60" cy="110" r="10"></circle>
+										<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+										<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+										<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+										<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+										<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+										<circle id="1" cx="60" cy="10" r="10"></circle>
+									</g>
+									<use xlink:href="#circle" class="use"/>
+								</svg>
+							</div>
+						</div>
+					</div>
+				</div>
+
+<!--
+				<div class="loader" id="loading_div" >
+					<div>L</div>
+					<div>O</div>
+					<div>A</div>
+					<div>D</div>
+					<div>I</div>
+					<div>N</div>
+					<div>G</div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+-->
+				<!-- terminal -->
+				<div class="col-md-4 col-md-4 " id="terminal">
+						<div class="x_panel">
+							<div class="x_title">
+								<h2>控制台输出</h2>
+								<ul class="nav navbar-right panel_toolbox">
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+								<div class="clearfix"></div>
+							</div>
+
+							<div class="x_content">
+								<div id="pingan_run_ans"></div>
+
+								<div id="loading_terminal" class="l-wrapper" style="display: none;margin-top:50px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+
+							<!--textarea style="height: 190px; width: 650px;" id="acc_run_ans" > </textarea-->
+							<!-- textarea class="col-lg-8 col-lg-8" id="acc_run_ans" > </textarea -->
+								<!--p id="acc_run_ans"></p-->
+
+							</div>
+						</div>
+					</div>
+				
+				<div class="clearfix"></div>
+				
+				<div class="row">
+					
+					<div class="col-md-4 col-sm-4 ">
+						<div class="x_panel">
+							<div class="x_title">
+								<div class="col-md-6">
+									<h2>代码展示</h2>
+								</div>
+								<div class="col-md-6">
+									<ul class="nav navbar-right panel_toolbox">
+										<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+										</li>
+										<li><a class="close-link"><i class="fa fa-close"></i></a>
+										</li>
+									</ul>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="x_content">
+								<div class="col-md-12 col-sm-12 " >
+									<div id="pingan_code" style="height: 515px;overflow-y: scroll;"></div>
+									<!--<textarea class="resizable_textarea form-control" placeholder="反欺诈计算代码..."  style="height: 515px;" id="pingan_code"></textarea>
+									-->
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-8 col-sm-8 ">
+					  <div class="x_panel">
+						<div class="x_title">
+							<div class="col-md-6">
+								<h2>图形化结果展示</h2>
+							</div>
+							<div class="col-md-6">
+								<ul class="nav navbar-right panel_toolbox">
+									<!--<div>
+										<button class="btn" id="show_run">开始 </button>
+									</div>-->
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+									</li>
+									<li><a class="close-link"><i class="fa fa-close"></i></a>
+									</li>
+								</ul>
+	
+								<script type="text/javascript">
+
+								/*show_run.onclick = function(e) {
+									var dom = document.getElementById("pingan_graphMap");
+									var pingan_myChart = echarts.init(dom);
+									pingan_getNodesDataSource(pingan_myChart,49);
+									var dom1 = document.getElementById("pingan_columnBarChart");
+									var pingan_barChart = echarts.init(dom1);
+									pingan_getBarChart(pingan_barChart,0);
+								}*/
+								</script>
+
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						
+						<div class="x_content">
+							<div class="col-md-12 col-sm-12">
+								<div id="pingan_graphMap"></div>
+								<div id="pingan_columnBarChart"></div>
+
+								<div id="loading_columnBarChart" class="l-wrapper" style="display: none;margin-top:220px;">
+									<svg viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+										<g id="circle" class="g-circles g-circles--v1">
+											<circle id="12" transform="translate(35, 16.698730) rotate(-30) translate(-35, -16.698730) " cx="35" cy="16.6987298" r="10"></circle>
+											<circle id="11" transform="translate(16.698730, 35) rotate(-60) translate(-16.698730, -35) " cx="16.6987298" cy="35" r="10"></circle>
+											<circle id="10" transform="translate(10, 60) rotate(-90) translate(-10, -60) " cx="10" cy="60" r="10"></circle>
+											<circle id="9" transform="translate(16.698730, 85) rotate(-120) translate(-16.698730, -85) " cx="16.6987298" cy="85" r="10"></circle>
+											<circle id="8" transform="translate(35, 103.301270) rotate(-150) translate(-35, -103.301270) " cx="35" cy="103.30127" r="10"></circle>
+											<circle id="7" cx="60" cy="110" r="10"></circle>
+											<circle id="6" transform="translate(85, 103.301270) rotate(-30) translate(-85, -103.301270) " cx="85" cy="103.30127" r="10"></circle>
+											<circle id="5" transform="translate(103.301270, 85) rotate(-60) translate(-103.301270, -85) " cx="103.30127" cy="85" r="10"></circle>
+											<circle id="4" transform="translate(110, 60) rotate(-90) translate(-110, -60) " cx="110" cy="60" r="10"></circle>
+											<circle id="3" transform="translate(103.301270, 35) rotate(-120) translate(-103.301270, -35) " cx="103.30127" cy="35" r="10"></circle>
+											<circle id="2" transform="translate(85, 16.698730) rotate(-150) translate(-85, -16.698730) " cx="85" cy="16.6987298" r="10"></circle>
+											<circle id="1" cx="60" cy="10" r="10"></circle>
+										</g>
+										<use xlink:href="#circle" class="use"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+
+					  </div>
+					</div>
+
+
+				</div>
+
+
+<!--				
+				<div class="row">
+			
+				
+					<div class="col-md-12 col-sm-12 ">
+					  <div class="x_title">
+						<div class="col-md-6">
+							<h3>代码展示</h3>
+						</div>
+						<div class="col-md-6">
+							<ul class="nav navbar-right panel_toolbox">
+							<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+							</li>
+							<li><a class="close-link"><i class="fa fa-close"></i></a>
+							</li>
+							</ul>
+						</div>
+						<div class="clearfix"></div>
+					  </div>
+
+					  <div class="x_content">
+						<div class="col-md-3 col-sm-3 ">
+							<br />
+							<form class="form-horizontal form-label-left" target="iframe_pingan">
+								<div class="form-group row">
+									<label class="control-label col-md-3 col-sm-3 ">算法</label>
+									<div class="col-md-9 col-sm-9 ">
+										<select class="select2_single form-control" tabindex="-1" id='code_option'>
+											<option value="pingan">personal pagerank</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="ln_solid"></div>
+								<div class="form-group">
+									<div class="col-md-9 col-sm-9  offset-md-3">
+										<button type="reset" class="btn btn-primary" id='code_reset'>重置</button>
+										<button type="submit" class="btn btn-success" id='code_show'>显示</button>
+									</div>
+								</div>
+							</form>
+
+							<iframe name="iframe_pingan" style="display:none;"></iframe>
+						</div>
+
+
+						<div class="col-md-9 col-sm-9 ">
+							</br >
+							<div class="col-md-12 col-sm-12 " >
+								<textarea class="resizable_textarea form-control" placeholder="反欺诈计算代码..." style="height: 400px" id="pingan_code"></textarea>
+							</div>
+						</div>
+
+					  </div>
+					</div>
+
+				</div>
+-->
+
+
+
+			</div>
+          </div>
+          <br />
+
+        </div>
+        <!-- /page content -->
+
+        <!-- footer content -->
+        <!--<footer>
+          <div class="pull-right">
+            <a href="http://grid.hust.edu.cn">计算机科学与技术学院，服务计算技术与系统教育部重点实验室、集群与网格计算湖北省重点实验室</a>
+          </div>
+          <div class="clearfix"></div>
+        </footer>-->
+        <!-- /footer content -->
+      </div>
+    </div>
+
+	
+	<!-- Bootstrap -->
+    <script src="{% static 'vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+	<!-- FastClick -->
+    <script src="{% static 'vendors/fastclick/lib/fastclick.js' %}"></script>
+	<!-- NProgress -->
+    <script src="{% static 'vendors/nprogress/nprogress.js' %}"></script>
+	<!-- Chart.js -->
+    <script src="{% static 'vendors/Chart.js/dist/Chart.min.js' %}"></script>
+	<!-- gauge.js -->
+    <script src="{% static 'vendors/gauge.js/dist/gauge.min.js' %}"></script>
+	<!-- bootstrap-progressbar -->
+    <script src="{% static 'vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
+	<!-- iCheck -->
+    <script src="{% static 'vendors/iCheck/icheck.min.js' %}"></script>
+	<!-- Skycons -->
+    <script src="{% static 'vendors/skycons/skycons.js' %}"></script>
+	<!-- Flot -->
+    <script src="{% static 'vendors/flot/jquery.flot.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.pie.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.time.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.stack.js' %}"></script>
+	<script src="{% static 'vendors/flot/jquery.flot.resize.js' %}"></script>
+	<!-- Flot plugins -->
+    <script src="{% static 'vendors/flot.orderbars/js/jquery.flot.orderBars.js' %}"></script>
+	<script src="{% static 'vendors/flot-spline/js/jquery.flot.spline.min.js' %}"></script>
+	<script src="{% static 'vendors/flot.curvedlines/curvedLines.js' %}"></script>
+	<!-- DateJS -->
+    <script src="{% static 'vendors/DateJS/build/date.js' %}"></script>
+	<!-- JQVMap -->
+    <script src="{% static 'vendors/jqvmap/dist/jquery.vmap.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/dist/maps/jquery.vmap.world.js' %}"></script>
+	<script src="{% static 'vendors/jqvmap/examples/js/jquery.vmap.sampledata.js' %}"></script>
+	<!-- bootstrap-daterangepicker -->
+	<script src="{% static 'vendors/moment/min/moment.min.js' %}"></script>
+	<script src="{% static 'vendors/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+    <!-- Custom Theme Scripts -->
+	<script src="{% static 'build/js/custom.min.js' %}"></script>
+
+
+  </body>
+</html>
